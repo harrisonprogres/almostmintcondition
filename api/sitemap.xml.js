@@ -9,6 +9,16 @@ function slugify(title) {
     .replace(/-+/g, '-');
 }
 
+function formatDate(dateStr) {
+  try {
+    var d = new Date(dateStr);
+    if (isNaN(d.getTime())) return new Date().toISOString().split('T')[0];
+    return d.toISOString().split('T')[0];
+  } catch(e) {
+    return new Date().toISOString().split('T')[0];
+  }
+}
+
 module.exports = async (req, res) => {
   try {
     const response = await fetch(
@@ -23,7 +33,7 @@ module.exports = async (req, res) => {
     const posts = await response.json();
 
     const urls = posts.map(p => {
-      const date = p.date_published || new Date().toISOString().split('T')[0];
+      const date = formatDate(p.date_published);
       return `  <url>
     <loc>https://www.almostmintcondition.com/article/${slugify(p.title)}</loc>
     <lastmod>${date}</lastmod>
