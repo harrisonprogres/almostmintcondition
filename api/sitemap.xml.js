@@ -1,5 +1,5 @@
-const SUPABASE_URL = 'https://ieccsyjiuugisdegiele.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_ttGwvqGFtCWKuTFyP2SvjQ_SfzAesGs';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 
 function slugify(title) {
   return title.toLowerCase()
@@ -21,6 +21,10 @@ function formatDate(dateStr) {
 
 module.exports = async (req, res) => {
   try {
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+      res.status(500).send('Missing Supabase configuration');
+      return;
+    }
     const response = await fetch(
       `${SUPABASE_URL}/rest/v1/posts?select=title,date_published&status=eq.published&order=created_at.desc`,
       {
