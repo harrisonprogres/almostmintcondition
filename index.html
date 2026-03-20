@@ -117,7 +117,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .art-pill{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:10px;}
 .art-title{font-family:'Fraunces',serif;font-size:clamp(26px,5vw,40px);font-weight:900;line-height:1.1;letter-spacing:-0.5px;margin-bottom:14px;}
 .art-meta{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted);padding:14px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:30px;}
-.art-header-img{width:100%;max-height:420px;object-fit:cover;border-radius:6px;margin-bottom:28px;}
+.art-header-img{width:100%;height:auto;max-height:none;object-fit:contain;background:#f3efe8;border-radius:6px;margin-bottom:28px;}
 .art-body{font-size:17px;line-height:1.9;color:#2C2825;}
 .art-body p{margin-bottom:1.5em;}
 .art-body h2{font-family:'Fraunces',serif;font-size:24px;font-weight:900;margin:2em 0 .7em;color:var(--ink);}
@@ -215,7 +215,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .img-upload-box{border:2px dashed var(--border);border-radius:4px;padding:16px;text-align:center;cursor:pointer;margin-bottom:8px;}
 .img-upload-box p{font-size:12px;color:var(--muted);}
 .img-url-inp{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;padding:8px 11px;outline:none;margin-top:8px;}
-.img-preview{width:100%;max-height:160px;object-fit:cover;border-radius:4px;margin-top:8px;display:none;border:1px solid var(--border);}
+.img-preview{width:100%;max-height:160px;object-fit:contain;border-radius:4px;margin-top:8px;display:none;border:1px solid var(--border);background:#f3efe8;}
 .img-preview.show{display:block;}
 .img-clear{background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;margin-top:6px;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:underline;display:none;}
 .img-clear.show{display:inline-block;}
@@ -810,10 +810,10 @@ function renderFeatured() {
   fl.style.display = 'flex';
   var featured = published[0];
   var sides = published.slice(1, 4);
-  var thumbImg = featured.headerImg ? '<img src="' + featured.headerImg + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">' : '<div class="feat-thumb-bg">&#128196;</div>';
+  var thumbImg = featured.headerImg ? '<img src="' + featured.headerImg + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#f3efe8;">' : '<div class="feat-thumb-bg">&#128196;</div>';
   var sidesHtml = '';
   sides.forEach(function(p) {
-    var sideThumb = p.headerImg ? '<img src="' + p.headerImg + '" style="width:100%;height:80px;object-fit:cover;border-radius:4px 4px 0 0;margin:-16px -18px 10px;width:calc(100% + 36px);">' : '';
+    var sideThumb = p.headerImg ? '<img src="' + p.headerImg + '" style="width:100%;height:80px;object-fit:contain;background:#f3efe8;border-radius:4px 4px 0 0;margin:-16px -18px 10px;width:calc(100% + 36px);">' : '';
     sidesHtml += '<div class="side-card" data-id="' + p.id + '"><div>' + sideThumb + '<div class="side-pill">' + p.tag + '</div><div class="side-title">' + p.title + '</div></div><div class="side-meta">' + p.date + ' &middot; ' + p.read + '</div></div>';
   });
   if (sides.length === 0) sidesHtml = '<div class="side-card" style="opacity:0.4;cursor:default;"><div class="side-pill">Coming soon</div><div class="side-title">More posts coming soon...</div></div>';
@@ -835,7 +835,7 @@ function renderPosts(cat) {
   var html = '';
   f.forEach(function(p) {
     var thumbContent = p.headerImg
-      ? '<img src="' + p.headerImg + '" style="width:100%;height:100%;object-fit:cover;">'
+      ? '<img src="' + p.headerImg + '" style="width:100%;height:100%;object-fit:contain;background:#f3efe8;">'
       : (p.emoji || '&#128196;');
     html += '<div class="post-card" data-id="' + p.id + '"><div class="post-thumb">' + thumbContent + '</div><div class="post-card-body"><div class="post-pill">' + p.tag + '</div><div class="post-title">' + p.title + '</div><div class="post-excerpt">' + p.excerpt + '</div><div class="post-meta"><span>' + p.author + '</span><span>&middot;</span><span>' + p.date + '</span><span>&middot;</span><span>' + p.read + '</span></div></div></div>';
   });
