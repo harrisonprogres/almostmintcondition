@@ -299,7 +299,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
     <div class="sec-label" id="featuredLabel" style="display:none;">Featured</div>
     <div class="feat-grid" id="featuredGrid"></div>
   </div>
-  <div class="posts-section">
+  <div class="posts-section" id="latestPostsSection">
     <div class="sec-label">Latest Posts</div>
     <div class="posts-grid" id="postsGrid"><div class="loading-state"><span class="spin">&#9685;</span><p style="margin-top:12px;font-size:13px;">Loading posts...</p></div></div>
   </div>
@@ -829,9 +829,39 @@ function renderFeatured() {
 
 function renderPosts(cat) {
   var g = document.getElementById('postsGrid');
+  var section = document.getElementById('latestPostsSection');
   var published = posts.filter(function(p) { return p.status === 'published'; });
-  var f = (cat === 'all') ? published.slice(1) : published.filter(function(p) { return p.category === cat || p.tag.toLowerCase() === cat; });
-  if (f.length === 0) { g.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="big">&#9997;</div><h3>No posts yet</h3><p>Be the first — click Write to get started.</p></div>'; return; }
+  // All posts fit in Featured (hero + 3 side slots): hide this whole section on "All Posts" — cleaner than an empty feed
+  if (section && cat === 'all' && published.length >= 1 && published.length <= 4) {
+    section.style.display = 'none';
+    return;
+  }
+  if (section) section.style.display = '';
+  // Featured uses newest post as hero + next 3 in the side stack — don't repeat those here
+  var featuredIds = {};
+  var featuredCount = Math.min(4, published.length);
+  for (var fi = 0; fi < featuredCount; fi++) featuredIds[published[fi].id] = true;
+  var f;
+  if (cat === 'all') {
+    f = published.slice(4);
+  } else {
+    f = published.filter(function(p) {
+      if (featuredIds[p.id]) return false;
+      return p.category === cat || p.tag.toLowerCase() === cat;
+    });
+  }
+  if (f.length === 0) {
+    var emptyMsg;
+    if (published.length === 0) {
+      emptyMsg = '<h3>No posts yet</h3><p>Be the first — click Write to get started.</p>';
+    } else if (cat !== 'all') {
+      emptyMsg = '<h3>No posts in this category</h3><p>Try another tab or view All Posts.</p>';
+    } else {
+      emptyMsg = '<h3>No more posts to show</h3><p>Check back soon.</p>';
+    }
+    g.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="big">&#9997;</div>' + emptyMsg + '</div>';
+    return;
+  }
   var html = '';
   f.forEach(function(p) {
     var thumbContent = p.headerImg
