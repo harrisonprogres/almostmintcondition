@@ -613,6 +613,12 @@ function handleHeaderUpload(input) {
 document.addEventListener('DOMContentLoaded', function() {
   var urlInp = document.getElementById('headerImgUrl');
   if (urlInp) { urlInp.addEventListener('input', function() { if (this.value) { setHeaderImg(this.value); } else { clearHeaderImg(); } }); }
+  var subInp = document.getElementById('subEmail');
+  if (subInp) {
+    subInp.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Enter') { ev.preventDefault(); subscribe(); }
+    });
+  }
 });
 function setHeaderImg(src) {
   document.getElementById('headerImgData').value = src;
@@ -1096,9 +1102,31 @@ function ins(before, after) {
   ta.focus(); ta.selectionStart = ta.selectionEnd = s + before.length + sel.length + after.length;
 }
 function subscribe() {
-  var e = document.getElementById('subEmail').value.trim();
+  var inp = document.getElementById('subEmail');
+  var btn = document.querySelector('.sub-btn');
+  var e = inp.value.trim();
   if (!e || e.indexOf('@') < 0) { showToast('Enter a valid email.'); return; }
-  document.getElementById('subEmail').value = ''; showToast('Welcome to Almost Mint Condition!');
+  if (btn && btn.dataset.loading === '1') return;
+  if (btn) { btn.dataset.loading = '1'; btn.disabled = true; btn.style.opacity = '0.7'; }
+  fetch('/api/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: e })
+  })
+    .then(function(r) { return r.text().then(function(t) { try { return { ok: r.ok, data: JSON.parse(t) }; } catch (_) { return { ok: r.ok, data: {} }; } }); })
+    .then(function(res) {
+      var d = res.data || {};
+      if (d.ok) {
+        inp.value = '';
+        showToast(d.message || "You're on the list!");
+      } else {
+        showToast(d.error || 'Something went wrong. Try again.');
+      }
+    })
+    .catch(function() { showToast('Something went wrong. Try again.'); })
+    .then(function() {
+      if (btn) { btn.dataset.loading = '0'; btn.disabled = false; btn.style.opacity = ''; }
+    });
 }
 function showToast(msg) {
   var t = document.getElementById('toast'); t.innerHTML = msg; t.classList.add('show');
