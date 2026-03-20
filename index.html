@@ -94,6 +94,16 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .sub-btn{background:linear-gradient(135deg,var(--red) 0%,var(--red-light) 100%);color:white;border:none;border-radius:7px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;padding:11px 20px;cursor:pointer;}
 .site-footer{background:#111;padding:24px 28px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.34);letter-spacing:1px;}
 .article-page{max-width:760px;margin:0 auto;padding:44px 28px 64px;}
+/* About / Contact — same dark hero + cream accents as homepage */
+.static-hero{background:linear-gradient(180deg,#231f1c 0%,var(--ink) 65%);padding:52px 28px 58px;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.08);}
+.static-hero-bg{position:absolute;font-family:'Fraunces',serif;font-size:clamp(100px,22vw,200px);font-weight:900;color:rgba(255,255,255,0.028);top:50%;left:50%;transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none;line-height:1;}
+.static-hero-inner{position:relative;z-index:1;}
+.static-hero-kicker{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;color:var(--red-light);text-transform:uppercase;margin-bottom:12px;}
+.static-hero-title{font-family:'Fraunces',serif;font-size:clamp(30px,5vw,46px);font-weight:900;color:#F7F4EE;line-height:1.08;letter-spacing:-1px;margin-bottom:12px;}
+.static-hero-title em{font-style:italic;color:var(--red-light);}
+.static-hero-desc{font-size:14px;color:rgba(247,244,238,0.62);max-width:520px;margin:0 auto;line-height:1.65;}
+.static-page-content{max-width:800px;margin:0 auto;padding:0 28px 72px;}
+.static-page-content .art-body{margin-top:-32px;position:relative;z-index:2;}
 .art-back{background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px;margin-bottom:28px;}
 .art-pill{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:10px;}
 .art-title{font-family:'Fraunces',serif;font-size:clamp(26px,5vw,40px);font-weight:900;line-height:1.1;letter-spacing:-0.5px;margin-bottom:14px;}
@@ -106,21 +116,26 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .art-body blockquote{border-left:3px solid var(--red);padding:4px 0 4px 18px;margin:1.5em 0;font-family:'Fraunces',serif;font-size:18px;font-style:italic;color:var(--muted);}
 .art-body hr{border:none;border-top:1px solid var(--border);margin:2em 0;}
 .inline-art-img{max-width:100%;border-radius:6px;margin:1.2em 0;display:block;}
-.about-shell{background:var(--card);border:1px solid #e8e3db;border-radius:12px;padding:26px 26px 10px;box-shadow:var(--shadow);}
-.about-lead{font-size:17px;line-height:1.8;color:#2c2825;margin-bottom:18px;}
-.about-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:8px 0 22px;}
-.about-chip{background:#f4f0e9;border:1px solid #e8e3db;border-radius:999px;padding:8px 12px;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5e564f;text-align:center;}
-.about-prose p{font-size:15px;line-height:1.85;color:#3a3430;}
-.about-prose h2{font-size:25px;margin-top:1.5em;}
-.about-prose h3{font-size:12px;letter-spacing:1.1px;}
-.about-prose blockquote{background:#fbf8f2;border:1px solid #ece6dd;border-left:3px solid var(--red);padding:14px 16px;border-radius:8px;color:#524a44;}
-.contact-shell{background:var(--card);border:1px solid #e8e3db;border-radius:12px;padding:26px 26px 14px;box-shadow:var(--shadow);}
-.contact-lead{font-size:16px;line-height:1.8;color:#2f2926;margin-bottom:16px;}
-.contact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0 18px;}
-.contact-card{background:#f4f0e9;border:1px solid #e8e3db;border-radius:10px;padding:12px;}
-.contact-card-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:#6a625a;margin-bottom:5px;}
-.contact-card-value{font-size:14px;font-weight:600;color:#2f2926;word-break:break-word;}
-.contact-prose p{font-size:15px;line-height:1.8;color:#3a3430;}
+.about-shell{background:linear-gradient(180deg,#ffffff 0%,#faf8f4 100%);border:1px solid rgba(28,25,23,.1);border-radius:14px;padding:28px 28px 14px;box-shadow:var(--shadow),inset 0 3px 0 0 var(--red);}
+.about-lead{font-size:17px;line-height:1.85;color:var(--ink);margin-bottom:20px;font-weight:500;}
+.about-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:10px 0 24px;}
+.about-chip{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1.15px;text-transform:uppercase;text-align:center;padding:11px 12px;border-radius:10px;color:rgba(247,244,238,.92);background:linear-gradient(145deg,#2f2a26 0%,var(--ink) 55%);border:1px solid rgba(255,255,255,.1);box-shadow:0 8px 22px rgba(28,25,23,.18);}
+.about-chip:hover{border-color:rgba(232,97,61,.45);box-shadow:0 10px 26px rgba(208,74,42,.2);}
+.about-prose p{font-size:15px;line-height:1.88;color:#3d3834;}
+.about-prose h2{font-family:'Fraunces',serif;font-size:clamp(22px,4vw,28px);font-weight:800;color:var(--ink);margin-top:1.45em;margin-bottom:.5em;}
+.about-prose h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);margin-top:1.35em;}
+.about-prose blockquote{background:linear-gradient(135deg,rgba(208,74,42,.08) 0%,rgba(28,25,23,.04) 100%);border:1px solid rgba(208,74,42,.22);border-left:4px solid var(--red);padding:16px 18px;border-radius:10px;color:#3d3834;font-family:'Fraunces',serif;font-size:17px;font-style:italic;line-height:1.55;}
+.contact-shell{background:linear-gradient(180deg,#ffffff 0%,#faf8f4 100%);border:1px solid rgba(28,25,23,.1);border-radius:14px;padding:28px 28px 16px;box-shadow:var(--shadow),inset 0 3px 0 0 var(--red);}
+.contact-lead{font-size:17px;line-height:1.85;color:var(--ink);margin-bottom:18px;font-weight:500;}
+.contact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0 22px;}
+.contact-card{border-radius:12px;overflow:hidden;border:1px solid rgba(28,25,23,.12);box-shadow:0 8px 24px rgba(28,25,23,.08);background:var(--card);}
+.contact-card-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--red-light);margin:0;padding:11px 14px;background:linear-gradient(180deg,#2a2522 0%,var(--ink) 100%);border-bottom:1px solid rgba(255,255,255,.06);}
+.contact-card-value{font-size:14px;font-weight:600;color:var(--ink);word-break:break-word;padding:14px 16px;background:linear-gradient(180deg,#fdfcfa 0%,#fff 100%);line-height:1.5;}
+.contact-prose p{font-size:15px;line-height:1.88;color:#3d3834;}
+.contact-prose a.contact-mail-cta{display:inline-flex;align-items:center;gap:8px;margin-top:4px;padding:12px 20px;border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;text-decoration:none;color:#fff;background:linear-gradient(135deg,var(--red) 0%,var(--red-light) 100%);box-shadow:0 8px 22px rgba(208,74,42,.32);transition:transform .15s,box-shadow .15s;}
+.contact-prose a.contact-mail-cta:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(208,74,42,.38);}
+.contact-prose a:not(.contact-mail-cta){color:var(--red);font-weight:700;text-decoration:underline;text-underline-offset:3px;}
+.contact-prose strong{color:var(--ink);}
 .fav-hero-note{font-size:14px;color:var(--muted);max-width:640px;line-height:1.75;margin-bottom:26px;}
 .favorites-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px;}
 .fav-card{background:var(--card);border:1px solid #e8e3db;border-radius:12px;overflow:hidden;transition:transform .18s,box-shadow .18s;box-shadow:0 4px 14px rgba(28,25,23,.04);}
@@ -226,7 +241,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .modal-insert{background:var(--red);color:white;border:none;border-radius:4px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
 .toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#F7F4EE;padding:11px 18px;border-radius:6px;font-size:13px;font-weight:600;border-left:3px solid var(--red);transform:translateY(70px);opacity:0;transition:all .28s;z-index:999;}
 .toast.show{transform:translateY(0);opacity:1;}
-@media(max-width:768px){.feat-grid{grid-template-columns:1fr;}.stat-row{grid-template-columns:1fr 1fr;}.dash{grid-template-columns:1fr;}.dash-side{display:none;}.nav-links{display:none;}.mobile-menu-btn{display:block;}.hero{padding:56px 20px 44px;}.content-area,.posts-section{padding-left:20px;padding-right:20px;}.email-footer{padding:50px 20px;}.about-shell{padding:18px 16px 4px;}.about-grid{grid-template-columns:1fr;}.favorites-grid{grid-template-columns:1fr;}.contact-shell{padding:18px 16px 8px;}.contact-grid{grid-template-columns:1fr;}}
+@media(max-width:768px){.feat-grid{grid-template-columns:1fr;}.stat-row{grid-template-columns:1fr 1fr;}.dash{grid-template-columns:1fr;}.dash-side{display:none;}.nav-links{display:none;}.mobile-menu-btn{display:block;}.hero{padding:56px 20px 44px;}.content-area,.posts-section{padding-left:20px;padding-right:20px;}.email-footer{padding:50px 20px;}.static-hero{padding:44px 20px 48px;}.static-page-content{padding-left:20px;padding-right:20px;padding-bottom:56px;}.static-page-content .art-body{margin-top:-22px;}.about-shell{padding:20px 18px 10px;}.about-grid{grid-template-columns:1fr;}.favorites-grid{grid-template-columns:1fr;}.contact-shell{padding:20px 18px 12px;}.contact-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -471,10 +486,15 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 
 
 <div id="page-about" class="page">
-  <div class="article-page">
-    <div class="art-pill">About</div>
-    <div class="art-title">About Almost Mint Condition</div>
-    <div class="art-meta"><span>AMC Staff</span><div class="meta-dot"></div><span>Est. 2026</span></div>
+  <header class="static-hero" aria-label="About">
+    <div class="static-hero-bg">AMC</div>
+    <div class="static-hero-inner">
+      <p class="static-hero-kicker">About</p>
+      <h1 class="static-hero-title">About Almost <em>Mint.</em></h1>
+      <p class="static-hero-desc">Who we are, what we publish, and how we think about the hobby — same voice as the homepage, less noise.</p>
+    </div>
+  </header>
+  <div class="static-page-content">
     <div class="art-body" id="about-body"><div class="loading-state"><span class="spin">&#9685;</span></div></div>
   </div>
 </div>
@@ -490,10 +510,15 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 </div>
 
 <div id="page-contact" class="page">
-  <div class="article-page">
-    <div class="art-pill">Contact</div>
-    <div class="art-title">Get in Touch</div>
-    <div class="art-meta"><span>AMC Staff</span><div class="meta-dot"></div><span>We read everything</span></div>
+  <header class="static-hero" aria-label="Contact">
+    <div class="static-hero-bg">AMC</div>
+    <div class="static-hero-inner">
+      <p class="static-hero-kicker">Contact</p>
+      <h1 class="static-hero-title">Get in <em>touch.</em></h1>
+      <p class="static-hero-desc">Questions, feedback, or collabs — we read every message and reply when we can give a real answer.</p>
+    </div>
+  </header>
+  <div class="static-page-content">
     <div class="art-body" id="contact-body"><div class="loading-state"><span class="spin">&#9685;</span></div></div>
   </div>
 </div>
@@ -1129,7 +1154,7 @@ function loadPage(pageId, targetId) {
         if (pageId === 'about') {
           el.innerHTML = '<div class="about-shell"><p class="about-lead">Almost Mint Condition is a focused Pokemon card publication built for collectors who care about data, context, and long-term conviction.</p><div class="about-grid"><div class="about-chip">Market Analysis</div><div class="about-chip">Collector Education</div><div class="about-chip">Card Spotlights</div></div><div class="about-prose"><p>We cover modern and vintage cards with a practical lens: what matters, why it matters, and where the hobby is moving next.</p><p>Our goal is simple: publish clear, honest takes that help collectors make better decisions without hype or noise.</p><blockquote>Stay almost mint, think long-term, collect with intent.</blockquote></div></div>';
         } else if (pageId === 'contact') {
-          el.innerHTML = '<div class="contact-shell"><p class="contact-lead">Have a question, collaboration idea, or market take to share? We read every message and prioritize thoughtful collector conversations.</p><div class="contact-grid"><div class="contact-card"><div class="contact-card-label">Response Time</div><div class="contact-card-value">Usually within 24-48 hours</div></div><div class="contact-card"><div class="contact-card-label">Best For</div><div class="contact-card-value">Partnerships, article feedback, and collector questions</div></div></div><div class="contact-prose"><p>Email us at <strong>hpsman1999@gmail.com</strong> for all inquiries.</p><p>If your message is about a specific card or set, include as much detail as possible so we can respond with context that is actually useful.</p></div></div>';
+          el.innerHTML = '<div class="contact-shell"><p class="contact-lead">Have a question, collaboration idea, or market take to share? We read every message and prioritize thoughtful collector conversations.</p><div class="contact-grid"><div class="contact-card"><div class="contact-card-label">Response Time</div><div class="contact-card-value">Usually within 24-48 hours</div></div><div class="contact-card"><div class="contact-card-label">Best For</div><div class="contact-card-value">Partnerships, article feedback, and collector questions</div></div></div><div class="contact-prose"><p>Email us for all inquiries:</p><p><a class="contact-mail-cta" href="mailto:hpsman1999@gmail.com">Email hpsman1999@gmail.com</a></p><p>If your message is about a specific card or set, include as much detail as possible so we can respond with context that is actually useful.</p></div></div>';
         } else {
           el.innerHTML = '<p>Coming soon.</p>';
         }
@@ -1140,7 +1165,7 @@ function loadPage(pageId, targetId) {
       if (pageId === 'about') {
         el.innerHTML = '<div class="about-shell"><p class="about-lead">Almost Mint Condition is a focused Pokemon card publication built for collectors who care about data, context, and long-term conviction.</p><div class="about-grid"><div class="about-chip">Market Analysis</div><div class="about-chip">Collector Education</div><div class="about-chip">Card Spotlights</div></div><div class="about-prose"><p>We cover modern and vintage cards with a practical lens: what matters, why it matters, and where the hobby is moving next.</p><p>Our goal is simple: publish clear, honest takes that help collectors make better decisions without hype or noise.</p><blockquote>Stay almost mint, think long-term, collect with intent.</blockquote></div></div>';
       } else if (pageId === 'contact') {
-        el.innerHTML = '<div class="contact-shell"><p class="contact-lead">Have a question, collaboration idea, or market take to share? We read every message and prioritize thoughtful collector conversations.</p><div class="contact-grid"><div class="contact-card"><div class="contact-card-label">Response Time</div><div class="contact-card-value">Usually within 24-48 hours</div></div><div class="contact-card"><div class="contact-card-label">Best For</div><div class="contact-card-value">Partnerships, article feedback, and collector questions</div></div></div><div class="contact-prose"><p>Email us at <strong>hpsman1999@gmail.com</strong> for all inquiries.</p><p>If your message is about a specific card or set, include as much detail as possible so we can respond with context that is actually useful.</p></div></div>';
+        el.innerHTML = '<div class="contact-shell"><p class="contact-lead">Have a question, collaboration idea, or market take to share? We read every message and prioritize thoughtful collector conversations.</p><div class="contact-grid"><div class="contact-card"><div class="contact-card-label">Response Time</div><div class="contact-card-value">Usually within 24-48 hours</div></div><div class="contact-card"><div class="contact-card-label">Best For</div><div class="contact-card-value">Partnerships, article feedback, and collector questions</div></div></div><div class="contact-prose"><p>Email us for all inquiries:</p><p><a class="contact-mail-cta" href="mailto:hpsman1999@gmail.com">Email hpsman1999@gmail.com</a></p><p>If your message is about a specific card or set, include as much detail as possible so we can respond with context that is actually useful.</p></div></div>';
       } else {
         el.innerHTML = '<p>Coming soon.</p>';
       }
