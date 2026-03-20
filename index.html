@@ -1202,6 +1202,11 @@ openArticle = function(id) {
 // Override showPage('home') to reset URL
 var _showPage = showPage;
 showPage = function(n) {
+  if (n === 'article') {
+    // Keep the article slug URL/meta set by openArticle wrapper.
+    _showPage(n);
+    return;
+  }
   var titles = { home: 'Almost Mint Condition', about: 'About — Almost Mint Condition', favorites: "AMC's Favorite Cards — Almost Mint Condition", contact: 'Contact — Almost Mint Condition' };
   var paths = { home: '/', about: '/about', favorites: '/favorites', contact: '/contact' };
   history.pushState({ page: n }, titles[n] || n, paths[n] || '/');
