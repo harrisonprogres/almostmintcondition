@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Almost Mint Condition — Pokemon Card Blog</title>
 <meta name="description" content="Market analysis, collector education, and Pokemon card spotlights.">
+<link rel="canonical" href="https://www.almostmintcondition.com/">
+<meta property="og:site_name" content="Almost Mint Condition">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Almost Mint Condition — Pokemon Card Blog">
+<meta property="og:description" content="Market analysis, collector education, and Pokemon card spotlights.">
+<meta property="og:url" content="https://www.almostmintcondition.com/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Almost Mint Condition — Pokemon Card Blog">
+<meta name="twitter:description" content="Market analysis, collector education, and Pokemon card spotlights.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231C1917'/><text x='16' y='23' text-anchor='middle' font-family='Georgia,serif' font-size='18' font-weight='900' fill='%23D04A2A'>A</text><text x='16' y='23' text-anchor='middle' font-family='Georgia,serif' font-size='18' font-weight='900' fill='%23F7F4EE' opacity='0.15'>A</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,800;0,900;1,700;1,900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1081,12 +1090,102 @@ function findPostBySlug(slug) {
 
 // Update meta tags for SEO
 function updateMeta(title, description, imgUrl) {
-  document.title = title ? title + ' — Almost Mint Condition' : 'Almost Mint Condition — Pokemon Card Blog';
+  var defaultTitle = 'Almost Mint Condition — Pokemon Card Blog';
+  var defaultDesc = 'Market analysis, collector education, and Pokemon card spotlights.';
+  var fullTitle = title ? (title + ' — Almost Mint Condition') : defaultTitle;
+  var fullDesc = description || defaultDesc;
+
+  document.title = fullTitle;
+
+  function upsertMeta(selector, attrs) {
+    var el = document.querySelector(selector);
+    if (!el) {
+      el = document.createElement('meta');
+      Object.keys(attrs).forEach(function(k) { el.setAttribute(k, attrs[k]); });
+      document.head.appendChild(el);
+      return el;
+    }
+    Object.keys(attrs).forEach(function(k) { el.setAttribute(k, attrs[k]); });
+    return el;
+  }
+
   var desc = document.querySelector('meta[name="description"]');
-  if (desc) desc.setAttribute('content', description || 'Market analysis, collector education, and Pokemon card spotlights.');
+  if (desc) desc.setAttribute('content', fullDesc);
+
   var canonical = document.getElementById('canonical');
-  if (!canonical) { canonical = document.createElement('link'); canonical.id = 'canonical'; canonical.rel = 'canonical'; document.head.appendChild(canonical); }
-  canonical.href = window.location.href;
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.id = 'canonical';
+    canonical.rel = 'canonical';
+    document.head.appendChild(canonical);
+  }
+  var base = (window.location.hostname === 'almostmintcondition.com' || window.location.hostname === 'www.almostmintcondition.com')
+    ? 'https://www.almostmintcondition.com'
+    : window.location.origin;
+  canonical.href = base + window.location.pathname;
+
+  upsertMeta('meta[property="og:site_name"]', { property: 'og:site_name', content: 'Almost Mint Condition' });
+  upsertMeta('meta[property="og:type"]', { property: 'og:type', content: 'website' });
+  upsertMeta('meta[property="og:title"]', { property: 'og:title', content: fullTitle });
+  upsertMeta('meta[property="og:description"]', { property: 'og:description', content: fullDesc });
+  upsertMeta('meta[property="og:url"]', { property: 'og:url', content: canonical.href });
+  upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary' });
+  upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: fullTitle });
+  upsertMeta('meta[name="twitter:description"]', { name: 'twitter:description', content: fullDesc });
+
+  // Optional image for share previews (only set when we actually have one).
+  if (imgUrl) {
+    upsertMeta('meta[property="og:image"]', { property: 'og:image', content: imgUrl });
+    upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: imgUrl });
+  }
+
+  // Structured data (JSON-LD): sitewide + (optional) BlogPosting when we have article fields.
+  var ld = document.getElementById('ldjson');
+  if (!ld) {
+    ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.id = 'ldjson';
+    document.head.appendChild(ld);
+  }
+
+  var graphs = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Almost Mint Condition',
+      url: base + '/',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: base + '/?q={search_term_string}',
+        'query-input': 'required name=search_term_string'
+      }
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'Almost Mint Condition',
+      url: base + '/'
+    }
+  ];
+
+  var isArticle = window.location.pathname.indexOf('/article/') === 0 && title;
+  if (isArticle) {
+    var article = {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: title,
+      description: fullDesc,
+      mainEntityOfPage: canonical.href,
+      author: { '@type': 'Organization', name: 'Almost Mint Condition' },
+      publisher: { '@type': 'Organization', name: 'Almost Mint Condition' }
+    };
+    if (imgUrl) article.image = [imgUrl];
+    graphs.push(article);
+    upsertMeta('meta[property="og:type"]', { property: 'og:type', content: 'article' });
+    upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: imgUrl ? 'summary_large_image' : 'summary' });
+  }
+
+  ld.textContent = JSON.stringify({ '@graph': graphs });
 }
 
 // Override openArticle to update URL
@@ -1096,7 +1195,7 @@ openArticle = function(id) {
   if (!a) return;
   var slug = slugify(a.title);
   history.pushState({ articleId: id }, a.title, '/article/' + slug);
-  updateMeta(a.title, a.excerpt);
+  updateMeta(a.title, a.excerpt, a.headerImg || '');
   _openArticle(id);
 };
 
@@ -1461,7 +1560,7 @@ loadPostsFromDB().then(function() {
   if (path.startsWith('/article/')) {
     var slug = path.replace('/article/', '');
     var post = findPostBySlug(slug);
-    if (post) { updateMeta(post.title, post.excerpt); _openArticle(post.id); }
+    if (post) { updateMeta(post.title, post.excerpt, post.headerImg || ''); _openArticle(post.id); }
     else renderHome('all');
   } else if (path === '/about') {
     _showPage('about');
