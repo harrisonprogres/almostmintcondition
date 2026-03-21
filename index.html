@@ -295,6 +295,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
     <button class="cat-btn" onclick="filterCat('news',this)">News</button>
     <button class="cat-btn" onclick="filterCat('spotlight',this)">Spotlight</button>
     <button class="cat-btn" onclick="filterCat('guide',this)">Guides</button>
+    <button class="cat-btn" onclick="filterCat('collection',this)">Collection</button>
   </div>
   <div class="content-area">
     <div class="sec-label" id="featuredLabel" style="display:none;">Featured</div>
@@ -375,7 +376,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
         <div class="stat-row">
           <div class="stat-box"><div class="stat-lbl">Published</div><div class="stat-num" id="statPosts">0</div><div class="stat-note">Live on your blog</div></div>
           <div class="stat-box"><div class="stat-lbl">Drafts</div><div class="stat-num" id="statDrafts">0</div><div class="stat-note">Saved locally</div></div>
-          <div class="stat-box"><div class="stat-lbl">Categories</div><div class="stat-num">5</div><div class="stat-note">Market, Grading...</div></div>
+          <div class="stat-box"><div class="stat-lbl">Categories</div><div class="stat-num">6</div><div class="stat-note">Market, Collection...</div></div>
           <div class="stat-box"><div class="stat-lbl">Status</div><div class="stat-num" style="font-size:16px;margin-top:4px;">&#128994; Live</div><div class="stat-note">almostmintcondition.com</div></div>
         </div>
         <div class="dash-welcome"><h2>Welcome back &#10022;</h2><p>Almost Mint Condition is live. What are you writing today?</p></div>
@@ -401,7 +402,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
             </div>
           </div>
           <div class="editor-fields">
-            <div class="ef"><label>Category</label><select id="pCat"><option>Market</option><option>Grading</option><option>News</option><option>Spotlight</option><option>Guide</option></select></div>
+            <div class="ef"><label>Category</label><select id="pCat"><option>Market</option><option>Grading</option><option>News</option><option>Spotlight</option><option>Guide</option><option>Collection</option></select></div>
             <div class="ef"><label>Read time</label><input id="pRead" placeholder="e.g. 5 min read"></div>
           </div>
           <input class="title-inp" id="pTitle" placeholder="Your headline...">
@@ -1038,7 +1039,7 @@ function deleteDraft(id) {
 function pubDraft(id) {
   var d = drafts.find(function(x) { return x.id === id; });
   if (!d) return;
-  var catEmojis = {'Market':'&#128200;','Grading':'&#128269;','News':'&#128240;','Spotlight':'&#127909;','Guide':'&#128218;'};
+  var catEmojis = {'Market':'&#128200;','Grading':'&#128269;','News':'&#128240;','Spotlight':'&#127909;','Guide':'&#128218;','Collection':'&#128193;'};
   var newPost = { id: d.id, tag: d.category, title: d.title || 'Untitled', author: 'AMC Staff',
     date: new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}),
     read: d.read || '4 min read', excerpt: d.excerpt || '', category: d.category.toLowerCase(),
@@ -1074,7 +1075,7 @@ function publishPost() {
   var exc = document.getElementById('pExcerpt').value.trim();
   var rd = document.getElementById('pRead').value.trim() || '4 min read';
   var headerImg = document.getElementById('headerImgData').value;
-  var catEmojis = {'Market':'&#128200;','Grading':'&#128269;','News':'&#128240;','Spotlight':'&#127909;','Guide':'&#128218;'};
+  var catEmojis = {'Market':'&#128200;','Grading':'&#128269;','News':'&#128240;','Spotlight':'&#127909;','Guide':'&#128218;','Collection':'&#128193;'};
   var editId = document.getElementById('editingId').value;
   var postData = { id: (editId && posts.find(function(p) { return p.id === editId; })) ? editId : ('p' + Date.now()),
     tag: cat, title: t, author: 'AMC Staff',
