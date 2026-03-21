@@ -12,6 +12,10 @@ Emails from **Join the AMC list** are saved to Supabase table `newsletter_subscr
 - **Supabase** → **Table Editor** → `newsletter_subscribers`
 - Export CSV from there when you want to mail a blast (Mailchimp, Buttondown, etc.).
 
+## Vercel routing
+
+The SPA fallback rewrite must **not** send `/api/*` to `index.html`, or newsletter (and other API `POST`s) will fail. This repo uses a rewrite pattern that skips paths starting with `api/` (see `vercel.json`).
+
 ## Env vars
 
 Uses the same Vercel env vars as the rest of the site:
