@@ -1108,7 +1108,7 @@ function subscribe() {
   if (!e || e.indexOf('@') < 0) { showToast('Enter a valid email.'); return; }
   if (btn && btn.dataset.loading === '1') return;
   if (btn) { btn.dataset.loading = '1'; btn.disabled = true; btn.style.opacity = '0.7'; }
-  fetch('/api/newsletter', {
+  fetch('/api/amc-email-signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: e })

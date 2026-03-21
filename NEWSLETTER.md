@@ -1,6 +1,6 @@
 # Newsletter (footer signup)
 
-Emails from **Join the AMC list** are saved to Supabase table `newsletter_subscribers` via `POST /api/newsletter` (legacy `POST /api/subscribe` still works).
+Emails from **Join the AMC list** are saved to Supabase table `newsletter_subscribers` via `POST /api/amc-email-signup` (legacy `POST /api/subscribe` also works).
 
 ## One-time setup (Supabase)
 

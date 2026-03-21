@@ -1,10 +1,10 @@
-const { supabaseFetch } = require('./_lib/supabase');
+const { supabaseFetch } = require('./supabase');
 
 function isValidEmail(s) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || '').trim());
 }
 
-module.exports = async (req, res) => {
+async function handleNewsletterPost(req, res) {
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method !== 'POST') {
@@ -77,4 +77,6 @@ module.exports = async (req, res) => {
       error: err && err.message ? err.message : 'Server error'
     });
   }
-};
+}
+
+module.exports = { handleNewsletterPost };
