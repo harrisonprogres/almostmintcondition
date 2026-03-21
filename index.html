@@ -892,12 +892,20 @@ function parseBody(text) {
     l = l.replace(/\*(.+?)\*/g, '<em>$1</em>');
     return l;
   }
-  return text.split('\n').filter(function(l) { return l.trim(); }).map(function(l) {
+  // Normalize Windows / pasted line endings so [IMG:...] lines match (otherwise ]\r breaks .endsWith(']'))
+  var lines = String(text).replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  return lines.map(function(l) { return l.trim(); }).filter(Boolean).map(function(l) {
     if (l.startsWith('## ')) return '<h2>' + parseInline(l.slice(3)) + '</h2>';
     if (l.startsWith('### ')) return '<h3>' + parseInline(l.slice(4)) + '</h3>';
     if (l.startsWith('> ')) return '<blockquote>' + parseInline(l.slice(2)) + '</blockquote>';
     if (l === '---') return '<hr>';
-    if (l.startsWith('[IMG:') && l.endsWith(']')) return '<img class="inline-art-img" src="' + l.slice(5, -1) + '" alt="Article image">';
+    if (l.indexOf('[IMG:') === 0) {
+      var close = l.lastIndexOf(']');
+      if (close > 5) {
+        var src = l.slice(5, close).trim();
+        if (src) return '<img class="inline-art-img" src="' + src + '" alt="Article image">';
+      }
+    }
     return '<p>' + parseInline(l) + '</p>';
   }).join('');
 }
