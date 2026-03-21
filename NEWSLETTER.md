@@ -1,6 +1,6 @@
 # Newsletter (footer signup)
 
-Emails from **Join the AMC list** are saved to Supabase table `newsletter_subscribers` via `POST /api/amc-email-signup` (legacy `POST /api/subscribe` also works).
+Emails from **Join the AMC list** are saved to Supabase table `newsletter_subscribers` via `POST /api/amc-email-signup` (Vercel rewrites that to the deployed `posts` serverless handler with `?amc_newsletter=1`). Legacy `POST /api/subscribe` uses the same rewrite.
 
 ## One-time setup (Supabase)
 

@@ -1,4 +1,0 @@
-const { handleNewsletterPost } = require('./_lib/newsletterHandler');
-
-/** Legacy path: /api/subscribe */
-module.exports = handleNewsletterPost;

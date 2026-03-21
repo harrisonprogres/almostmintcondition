@@ -2,6 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap.xml" },
+    {
+      "source": "/api/amc-email-signup",
+      "destination": "/api/posts?amc_newsletter=1"
+    },
+    {
+      "source": "/api/subscribe",
+      "destination": "/api/posts?amc_newsletter=1"
+    },
     { "source": "/", "destination": "/index.html" },
     { "source": "/about", "destination": "/index.html" },
     { "source": "/favorites", "destination": "/index.html" },
