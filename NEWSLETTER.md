@@ -14,7 +14,7 @@ Emails from **Join the AMC list** are saved to Supabase table `newsletter_subscr
 
 ## Vercel routing
 
-The SPA fallback must **not** send `/api/*` to `index.html`, or newsletter (and other API `POST`s) will fail. `vercel.json` uses a rewrite that matches all paths **except** those starting with `api/` (negative lookahead), so `/api/newsletter` hits the serverless function.
+Vercel applies **rewrites before** serverless routes. A catch‑all `/(.*)` → `index.html` will swallow **`/api/*`** too (newsletter never runs). This project uses **only explicit SPA rewrites** (`/`, `/about`, `/favorites`, `/contact`, `/article/:slug*`) so **`/api/*` is never rewritten** and hits your functions. If you add new client-side URL paths, add a matching rewrite in `vercel.json`.
 
 ## Env vars
 

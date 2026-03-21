@@ -3,9 +3,9 @@
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap.xml" },
     { "source": "/", "destination": "/index.html" },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/about", "destination": "/index.html" },
+    { "source": "/favorites", "destination": "/index.html" },
+    { "source": "/contact", "destination": "/index.html" },
+    { "source": "/article/:slug*", "destination": "/index.html" }
   ]
 }
