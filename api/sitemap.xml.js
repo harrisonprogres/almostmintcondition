@@ -1,8 +1,14 @@
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+const { supabaseFetch } = require('./_lib/supabase');
+
+const SITE_ORIGIN =
+  (process.env.SITE_URL || 'https://www.almostmintcondition.com').replace(
+    /\/$/,
+    ''
+  );
 
 function slugify(title) {
-  return title.toLowerCase()
+  return String(title || '')
+    .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
     .trim()
     .replace(/\s+/g, '-')
@@ -11,78 +17,98 @@ function slugify(title) {
 
 function formatDate(dateStr) {
   try {
-    var d = new Date(dateStr);
+    const d = new Date(dateStr);
     if (isNaN(d.getTime())) return new Date().toISOString().split('T')[0];
     return d.toISOString().split('T')[0];
-  } catch(e) {
+  } catch (_) {
     return new Date().toISOString().split('T')[0];
   }
 }
 
 module.exports = async (req, res) => {
-  try {
-    if (!SUPABASE_URL || !SUPABASE_KEY) {
-      res.status(500).send('Missing Supabase configuration');
-      return;
-    }
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/posts?select=title,date_published&status=eq.published&order=created_at.desc`,
-      {
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`
-        }
-      }
-    );
-    const posts = await response.json();
+  if (req.method !== 'GET') {
+    res.status(405).send('Method not allowed');
+    return;
+  }
 
-    const urls = posts.map(p => {
+  let posts = [];
+
+  try {
+    const response = await supabaseFetch(
+      'posts?select=title,date_published&status=eq.published&order=created_at.desc',
+      { method: 'GET' },
+      true
+    );
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (_) {
+      data = null;
+    }
+
+    if (response.ok && Array.isArray(data)) {
+      posts = data;
+    }
+    // If Supabase errors, still emit a valid sitemap with static URLs only
+  } catch (_) {
+    posts = [];
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const articleUrls = posts
+    .filter(function (p) {
+      return p && p.title;
+    })
+    .map(function (p) {
       const date = formatDate(p.date_published);
+      const slug = slugify(p.title);
+      if (!slug) return '';
       return `  <url>
-    <loc>https://www.almostmintcondition.com/article/${slugify(p.title)}</loc>
+    <loc>${SITE_ORIGIN}/article/${slug}</loc>
     <lastmod>${date}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>`;
-    }).join('\n');
+    })
+    .filter(Boolean)
+    .join('\n');
 
-    const staticUrls = [
-      `  <url>
-    <loc>https://www.almostmintcondition.com/about</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+  const staticUrls = [
+    `  <url>
+    <loc>${SITE_ORIGIN}/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>`,
+    `  <url>
+    <loc>${SITE_ORIGIN}/about</loc>
+    <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>`,
-      `  <url>
-    <loc>https://www.almostmintcondition.com/favorites</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    `  <url>
+    <loc>${SITE_ORIGIN}/favorites</loc>
+    <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>`,
-      `  <url>
-    <loc>https://www.almostmintcondition.com/contact</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    `  <url>
+    <loc>${SITE_ORIGIN}/contact</loc>
+    <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>`
-    ].join('\n');
+  ].join('\n');
 
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://www.almostmintcondition.com/</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
 ${staticUrls}
-${urls}
+${articleUrls}
 </urlset>`;
 
-    res.setHeader('Content-Type', 'application/xml');
-    res.setHeader('Cache-Control', 's-maxage=3600');
-    res.status(200).send(sitemap);
-  } catch (err) {
-    res.status(500).send('Error generating sitemap');
-  }
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate');
+  res.status(200).send(sitemap);
 };
