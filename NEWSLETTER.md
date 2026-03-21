@@ -1,6 +1,6 @@
 # Newsletter (footer signup)
 
-Emails from **Join the AMC list** are saved to Supabase table `newsletter_subscribers` via `POST /api/subscribe`.
+Emails from **Join the AMC list** are saved to Supabase table `newsletter_subscribers` via `POST /api/newsletter` (legacy `POST /api/subscribe` still works).
 
 ## One-time setup (Supabase)
 
@@ -14,7 +14,7 @@ Emails from **Join the AMC list** are saved to Supabase table `newsletter_subscr
 
 ## Vercel routing
 
-The SPA fallback must **not** send `/api/*` to `index.html`, or newsletter (and other API `POST`s) will fail. This repo uses legacy **`routes`** with **`handle: filesystem`** first so real files and `/api/*` serverless functions win; only then unmatched paths fall through to `index.html` (see `vercel.json`).
+The SPA fallback must **not** send `/api/*` to `index.html`, or newsletter (and other API `POST`s) will fail. `vercel.json` uses a rewrite that matches all paths **except** those starting with `api/` (negative lookahead), so `/api/newsletter` hits the serverless function.
 
 ## Env vars
 
