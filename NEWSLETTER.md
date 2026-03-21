@@ -14,7 +14,7 @@ Emails from **Join the AMC list** are saved to Supabase table `newsletter_subscr
 
 ## Vercel routing
 
-The SPA fallback rewrite must **not** send `/api/*` to `index.html`, or newsletter (and other API `POST`s) will fail. This repo uses a rewrite pattern that skips paths starting with `api/` (see `vercel.json`).
+The SPA fallback must **not** send `/api/*` to `index.html`, or newsletter (and other API `POST`s) will fail. This repo uses legacy **`routes`** with **`handle: filesystem`** first so real files and `/api/*` serverless functions win; only then unmatched paths fall through to `index.html` (see `vercel.json`).
 
 ## Env vars
 

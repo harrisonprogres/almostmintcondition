@@ -1,10 +1,8 @@
 {
-  "rewrites": [
-    { "source": "/sitemap.xml", "destination": "/api/sitemap.xml" },
-    { "source": "/", "destination": "/index.html" },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
-    }
+  "version": 2,
+  "routes": [
+    { "src": "/sitemap.xml", "dest": "/api/sitemap.xml" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
