@@ -111,7 +111,22 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .sub-input::placeholder{color:rgba(247,244,238,0.3);}
 .sub-btn{background:linear-gradient(135deg,var(--red) 0%,var(--red-light) 100%);color:white;border:none;border-radius:7px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;padding:11px 20px;cursor:pointer;}
 .site-footer{background:#111;padding:24px 28px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.34);letter-spacing:1px;}
-.article-page{max-width:760px;margin:0 auto;padding:44px 28px 64px;}
+.article-page{max-width:1200px;margin:0 auto;padding:44px 28px 64px;}
+.article-layout{display:grid;grid-template-columns:minmax(0,760px) 1fr;gap:34px;align-items:start;}
+.article-main{min-width:0;}
+.article-aside{min-width:0;padding-top:22px;}
+.aside-kicker{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;color:var(--red-light);text-transform:uppercase;margin-bottom:12px;}
+.related-posts{display:flex;flex-direction:column;gap:12px;}
+.related-post-link{display:flex;gap:12px;align-items:flex-start;border:1px solid rgba(28,25,23,.09);border-radius:12px;padding:12px 14px;background:rgba(255,255,255,.55);text-decoration:none;transition:transform .18s, box-shadow .18s, border-color .18s;}
+.related-post-link:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(28,25,23,.10);border-color:rgba(208,74,42,.35);}
+.related-post-thumb{width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;background:#f3efe8;}
+.related-post-emoji{width:56px;height:56px;border-radius:10px;background:rgba(28,25,23,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;}
+.related-post-text{min-width:0;display:flex;flex-direction:column;gap:4px;}
+.related-post-title{font-family:'Fraunces',serif;font-size:14px;font-weight:900;line-height:1.25;color:var(--ink);margin-bottom:4px;}
+.related-post-title{margin-bottom:0;}
+.related-post-meta{font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;color:var(--muted);font-weight:600;}
+.article-footer{grid-column:1 / -1;margin-top:46px;padding-top:26px;}
+.article-email-footer{margin-top:22px;}
 /* About / Contact — same dark hero + cream accents as homepage */
 .static-hero{background:linear-gradient(180deg,#231f1c 0%,var(--ink) 65%);padding:52px 28px 58px;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.08);}
 .static-hero-bg{position:absolute;font-family:'Fraunces',serif;font-size:clamp(100px,22vw,200px);font-weight:900;color:rgba(255,255,255,0.028);top:50%;left:50%;transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none;line-height:1;}
@@ -269,6 +284,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#F7F4EE;padding:11px 18px;border-radius:6px;font-size:13px;font-weight:600;border-left:3px solid var(--red);transform:translateY(70px);opacity:0;transition:all .28s;z-index:999;}
 .toast.show{transform:translateY(0);opacity:1;}
 @media(max-width:768px){.feat-grid{grid-template-columns:1fr;}.stat-row{grid-template-columns:1fr 1fr;}.dash{grid-template-columns:1fr;}.dash-side{display:none;}.nav-links{display:none;}.mobile-menu-btn{display:block;}.hero{padding:56px 20px 44px;}.content-area,.posts-section{padding-left:20px;padding-right:20px;}.email-footer{padding:50px 20px;}.static-hero{padding:44px 20px 48px;}.static-page-content{padding-left:20px;padding-right:20px;padding-bottom:56px;}.static-page-content .art-body{margin-top:-22px;}.about-shell{padding:20px 18px 10px;}.about-grid{grid-template-columns:1fr;}.favorites-grid{grid-template-columns:1fr;}.contact-shell{padding:20px 18px 12px;}.contact-grid{grid-template-columns:1fr;}}
+@media(max-width:768px){.article-page{padding:44px 20px 72px;}.article-layout{grid-template-columns:1fr;}.article-aside{padding-top:0;margin-top:26px;}.article-footer{margin-top:26px;}}
 </style>
 </head>
 <body>
@@ -336,12 +352,38 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 
 <div id="page-article" class="page">
   <div class="article-page">
-    <button class="art-back" onclick="showPage('home')">&larr; All posts</button>
-    <div class="art-pill" id="art-tag"></div>
-    <div class="art-title" id="art-title"></div>
-    <div class="art-meta"><span id="art-author"></span><span>&middot;</span><span id="art-date"></span><span>&middot;</span><span id="art-read"></span></div>
-    <img id="art-header-img" class="art-header-img" src="" alt="" style="display:none;">
-    <div class="art-body" id="art-body"></div>
+    <div class="article-layout">
+      <main class="article-main">
+        <button class="art-back" onclick="showPage('home')">&larr; All posts</button>
+        <div class="art-pill" id="art-tag"></div>
+        <div class="art-title" id="art-title"></div>
+        <div class="art-meta"><span id="art-author"></span><span>&middot;</span><span id="art-date"></span><span>&middot;</span><span id="art-read"></span></div>
+        <img id="art-header-img" class="art-header-img" src="" alt="" style="display:none;">
+        <div class="art-body" id="art-body"></div>
+      </main>
+
+      <aside class="article-aside" aria-label="Related articles">
+        <div class="aside-kicker">Keep reading</div>
+        <div id="relatedPostsSidebar" class="related-posts"></div>
+      </aside>
+
+      <div class="article-footer" id="article-footer">
+        <div class="article-footer-related">
+          <div class="aside-kicker">More from AMC</div>
+          <div id="relatedPostsFooter" class="related-posts"></div>
+        </div>
+
+        <div class="email-footer article-email-footer">
+          <div class="email-footer-kicker">Stay in the loop</div>
+          <div class="email-footer-title">Join the AMC list.</div>
+          <div class="email-footer-desc">Market analysis, collector education, and card spotlights &mdash; straight to your inbox.</div>
+          <div class="sub-row">
+            <input class="sub-input" id="articleSubEmail" type="email" placeholder="your@email.com">
+            <button class="sub-btn" onclick="subscribe('articleSubEmail')">Subscribe &rarr;</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -771,7 +813,55 @@ function openArticle(id) {
   var headerEl = document.getElementById('art-header-img');
   if (a.headerImg) { headerEl.src = a.headerImg; headerEl.style.display = 'block'; } else { headerEl.style.display = 'none'; }
   document.getElementById('art-body').innerHTML = parseBody(a.rawBody || '');
+  renderRelatedArticles(a);
   showPage('article');
+}
+
+function renderRelatedArticles(curr) {
+  var sidebar = document.getElementById('relatedPostsSidebar');
+  var footer = document.getElementById('relatedPostsFooter');
+  if (!sidebar && !footer) return;
+  var related = [];
+  var used = {};
+
+  // Primary: same tag/category (best proxy for "chain reading" without schema changes).
+  posts.forEach(function(p) {
+    if (p.id === curr.id) return;
+    if (related.length >= 5) return;
+    var sameTag = (p.tag || '').toLowerCase() === (curr.tag || '').toLowerCase();
+    var sameCat = (p.category || '').toLowerCase() === (curr.category || '').toLowerCase();
+    if (sameTag || sameCat) {
+      if (!used[p.id]) { used[p.id] = true; related.push(p); }
+    }
+  });
+
+  // Fallback: newest other posts.
+  posts.forEach(function(p) {
+    if (related.length >= 5) return;
+    if (p.id === curr.id || used[p.id]) return;
+    used[p.id] = true;
+    related.push(p);
+  });
+
+  var emptyMsg = '<div style="font-size:13px;color:var(--muted);line-height:1.6;">More posts coming soon.</div>';
+  var html = related.slice(0, 5).map(function(p) {
+    var url = '/article/' + slugify(p.title);
+    var title = esc(p.title);
+    var meta = esc(p.date) + ' • ' + esc(p.read);
+    var thumb = p.headerImg
+      ? '<img class="related-post-thumb" src="' + p.headerImg + '" alt="Thumbnail">'
+      : '<div class="related-post-emoji" aria-hidden="true">' + (p.emoji || '&#128196;') + '</div>';
+    return '<a class="related-post-link" href="' + url + '" onclick="event.preventDefault(); openArticle(\'' + p.id + '\')">' +
+      thumb +
+      '<div class="related-post-text">' +
+        '<div class="related-post-title">' + title + '</div>' +
+        '<div class="related-post-meta">' + meta + '</div>' +
+      '</div>' +
+      '</a>';
+  }).join('');
+
+  if (sidebar) sidebar.innerHTML = html || emptyMsg;
+  if (footer) footer.innerHTML = html || emptyMsg;
 }
 
 function renderDash() {
@@ -961,9 +1051,9 @@ function ins(before, after) {
   ta.value = ta.value.substring(0, s) + before + sel + after + ta.value.substring(e);
   ta.focus(); ta.selectionStart = ta.selectionEnd = s + before.length + sel.length + after.length;
 }
-function subscribe() {
-  var inp = document.getElementById('subEmail');
-  var btn = document.querySelector('.sub-btn');
+function subscribe(inputId) {
+  var inp = document.getElementById(inputId || 'subEmail');
+  var btn = inp && inp.parentElement ? inp.parentElement.querySelector('.sub-btn') : document.querySelector('.sub-btn');
   var e = inp.value.trim();
   if (!e || e.indexOf('@') < 0) { showToast('Enter a valid email.'); return; }
   if (btn && btn.dataset.loading === '1') return;
