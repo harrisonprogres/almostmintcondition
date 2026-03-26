@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Almost Mint Condition — Pokemon Card Blog</title>
+<title>Admin — Almost Mint Condition</title>
 <meta name="description" content="Market analysis, collector education, and Pokemon card spotlights.">
 <link rel="canonical" href="https://www.almostmintcondition.com/">
 <meta property="og:site_name" content="Almost Mint Condition">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Almost Mint Condition — Pokemon Card Blog">
+<meta property="og:title" content="Admin — Almost Mint Condition">
 <meta property="og:description" content="Market analysis, collector education, and Pokemon card spotlights.">
 <meta property="og:url" content="https://www.almostmintcondition.com/">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Almost Mint Condition — Pokemon Card Blog">
+<meta name="twitter:title" content="Admin — Almost Mint Condition">
 <meta name="twitter:description" content="Market analysis, collector education, and Pokemon card spotlights.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231C1917'/><text x='16' y='23' text-anchor='middle' font-family='Georgia,serif' font-size='18' font-weight='900' fill='%23D04A2A'>A</text><text x='16' y='23' text-anchor='middle' font-family='Georgia,serif' font-size='18' font-weight='900' fill='%23F7F4EE' opacity='0.15'>A</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -331,7 +331,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
       <button class="sub-btn" onclick="subscribe()">Subscribe &rarr;</button>
     </div>
   </div>
-  <div class="site-footer">&copy; 2026 ALMOST MINT CONDITION &middot; STAY ALMOST MINT. &nbsp;&nbsp;<span onclick="window.location.href='/admin'" style="color:rgba(255,255,255,0.15);cursor:pointer;font-size:9px;letter-spacing:1px;">AMC Staff Login</span></div>
+  <div class="site-footer">&copy; 2026 ALMOST MINT CONDITION &middot; STAY ALMOST MINT. &nbsp;&nbsp;<span onclick="requireLogin()" style="color:rgba(255,255,255,0.15);cursor:pointer;font-size:9px;letter-spacing:1px;">AMC Staff Login</span></div>
 </div>
 
 <div id="page-article" class="page">
@@ -344,6 +344,174 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
     <div class="art-body" id="art-body"></div>
   </div>
 </div>
+
+<div id="page-login" class="page">
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="login-logo">Almost <span class="amc">Mint</span> Condition</div>
+      <div class="login-sub">Admin Access</div>
+      <div class="login-field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="login-field">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In &rarr;</button>
+      <div class="login-error" id="loginError">Incorrect password. Try again.</div>
+      <div style="margin-top:16px;text-align:center;">
+        <button onclick="window.location.href='/'" style="background:none;border:none;color:rgba(247,244,238,0.3);font-size:12px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">&larr; Back to blog</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-dashboard" class="page">
+  <div class="dash">
+    <div class="dash-side">
+      <div class="dash-side-sec">
+        <div class="dash-side-lbl">Overview</div>
+        <div class="dash-side-item active" onclick="showDS('overview',this)"><span class="ico">&#128202;</span>Dashboard</div>
+        <div class="dash-side-item" onclick="showDS('posts',this)"><span class="ico">&#128196;</span>All Posts</div>
+        <div class="dash-side-item" onclick="showDS('editor',this)"><span class="ico">&#9997;</span>New Post</div>
+      </div>
+      <div class="dash-side-sec">
+        <div class="dash-side-lbl">Manage</div>
+        <div class="dash-side-item" onclick="showDS('drafts',this)"><span class="ico">&#128221;</span>Drafts<span class="count" id="draftCount">0</span></div>
+        <div class="dash-side-item" onclick="showDS('pages',this)"><span class="ico">&#128196;</span>Edit Pages</div>
+        <div class="dash-side-item" onclick="showDS('favs',this)"><span class="ico">&#11088;</span>Favorites</div>
+        <div class="dash-side-item" onclick="showDS('topcards',this)"><span class="ico">&#128200;</span>Top Cards Ticker</div>
+      </div>
+      <div class="dash-side-sec" style="margin-top:12px;">
+        <div class="dash-side-item" onclick="window.location.href='/'"><span class="ico">&#128065;</span>View Blog</div>
+        <div class="dash-side-item" onclick="doLogout()"><span class="ico">&#128274;</span>Log Out</div>
+      </div>
+    </div>
+    <div class="dash-body">
+      <div id="ds-overview">
+        <div class="stat-row">
+          <div class="stat-box"><div class="stat-lbl">Published</div><div class="stat-num" id="statPosts">0</div><div class="stat-note">Live on your blog</div></div>
+          <div class="stat-box"><div class="stat-lbl">Drafts</div><div class="stat-num" id="statDrafts">0</div><div class="stat-note">Saved locally</div></div>
+          <div class="stat-box"><div class="stat-lbl">Categories</div><div class="stat-num">6</div><div class="stat-note">Market, Collection...</div></div>
+          <div class="stat-box"><div class="stat-lbl">Status</div><div class="stat-num" style="font-size:16px;margin-top:4px;">&#128994; Live</div><div class="stat-note">almostmintcondition.com</div></div>
+        </div>
+        <div class="dash-welcome"><h2>Welcome back &#10022;</h2><p>Almost Mint Condition is live. What are you writing today?</p></div>
+        <div class="recent-sec"><div class="recent-lbl">Recent Posts</div><div id="recentList"></div></div>
+        <div class="write-cta"><div><h3>What's your next take?</h3><p>The Pokemon collecting community is waiting.</p></div><button class="cta-btn" onclick="showDS('editor',null)">Write a Post &rarr;</button></div>
+      </div>
+      <div id="ds-posts" style="display:none;">
+        <div class="pm-wrap">
+          <div class="pm-head"><h2>All Posts</h2><button class="btn-pub" onclick="showDS('editor',null)">+ New Post</button></div>
+          <table class="pm-table"><thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody id="pmBody"></tbody></table>
+        </div>
+      </div>
+      <div id="ds-editor" style="display:none;">
+        <div class="editor-wrap">
+          <div class="editor-top">
+            <div class="editor-top-left">
+              <button class="mode-btn active" onclick="setMode('write',this)">Write</button>
+              <button class="mode-btn" onclick="setMode('preview',this)">Preview</button>
+            </div>
+            <div class="editor-actions">
+              <button class="btn-save" onclick="saveDraft()">Save Draft</button>
+              <button class="btn-pub" onclick="publishPost()">Publish &rarr;</button>
+            </div>
+          </div>
+          <div class="editor-fields">
+            <div class="ef"><label>Category</label><select id="pCat"><option>Market</option><option>Grading</option><option>News</option><option>Community</option><option>Guide</option><option>Collection</option></select></div>
+            <div class="ef"><label>Read time</label><input id="pRead" placeholder="e.g. 5 min read"></div>
+          </div>
+          <input class="title-inp" id="pTitle" placeholder="Your headline...">
+          <input class="excerpt-inp" id="pExcerpt" placeholder="One-line description...">
+          <div class="img-field">
+            <label>Header Image (banner + thumbnail)</label>
+            <div class="img-upload-box" onclick="document.getElementById('headerImgFile').click()">
+              <p>&#128247; Click to upload a photo from your computer</p>
+              <input type="file" id="headerImgFile" accept="image/*" style="display:none" onchange="handleHeaderUpload(this)">
+            </div>
+            <input class="img-url-inp" id="headerImgUrl" type="text" placeholder="Or paste an image URL here...">
+            <img class="img-preview" id="headerImgPreview" src="" alt="Preview">
+            <button class="img-clear" id="headerImgClear" onclick="clearHeaderImg()">&#10005; Remove image</button>
+            <input type="hidden" id="headerImgData" value="">
+          </div>
+          <div class="fmt-bar">
+            <button class="fmt-btn" onclick="ins('## ')">H2</button>
+            <button class="fmt-btn" onclick="ins('### ')">H3</button>
+            <button class="fmt-btn" onclick="ins('**','**')">Bold</button>
+            <button class="fmt-btn" onclick="ins('*','*')">Italic</button>
+            <button class="fmt-btn" onclick="ins('> ')">Quote</button>
+            <button class="fmt-btn" onclick="ins('\n---\n')">Divider</button>
+            <button class="fmt-btn" onclick="openImgModal()">&#128247; Insert Image</button>
+          </div>
+          <div id="edWrite"><textarea class="body-inp" id="pBody" placeholder="Start writing..."></textarea></div>
+          <div id="edPreview" style="display:none;"><div class="art-body" id="prevBody"></div></div>
+          <input type="hidden" id="editingId" value="">
+        </div>
+      </div>
+      <div id="ds-drafts" style="display:none;">
+        <div class="pm-wrap">
+          <div class="pm-head"><h2>Drafts</h2></div>
+          <table class="pm-table"><thead><tr><th>Title</th><th>Category</th><th>Last Saved</th><th>Actions</th></tr></thead><tbody id="draftsBody"></tbody></table>
+        </div>
+      </div>
+      <div id="ds-pages" style="display:none;">
+        <div class="pm-wrap">
+          <div class="pm-head"><h2>Edit Pages</h2></div>
+          <div style="display:flex;gap:10px;margin-bottom:20px;">
+            <button class="pm-btn" id="page-tab-about" onclick="switchPageTab('about')" style="background:var(--ink);color:#F7F4EE;border-color:var(--ink);">About</button>
+            <button class="pm-btn" id="page-tab-contact" onclick="switchPageTab('contact')">Contact</button>
+          </div>
+          <div style="margin-bottom:10px;font-size:11px;color:var(--muted);">Use ## for headings, **bold** for bold text. Each line becomes a paragraph.</div>
+          <textarea id="pageEditorBody" style="width:100%;min-height:340px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;line-height:1.8;padding:14px;resize:vertical;outline:none;"></textarea>
+          <div style="margin-top:12px;display:flex;gap:8px;">
+            <button class="btn-pub" onclick="savePage()">Save Page &rarr;</button>
+          </div>
+          <input type="hidden" id="currentPageId" value="about">
+        </div>
+      </div>
+      <div id="ds-favs" style="display:none;">
+        <div class="pm-wrap">
+          <div class="pm-head"><h2>Favorite Cards</h2><button class="btn-pub" onclick="showAddFav()">+ Add Card</button></div>
+          <div id="addFavForm" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:20px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+              <div class="ef"><label>Card Name</label><input id="favName" placeholder="e.g. Charizard VMAX"></div>
+              <div class="ef"><label>Set Name</label><input id="favSet" placeholder="e.g. SWSH04: Vivid Voltage"></div>
+            </div>
+            <div class="ef" style="margin-bottom:10px;"><label>Image URL</label><input id="favImg" placeholder="https://..."></div>
+            <div class="ef" style="margin-bottom:14px;"><label>Why it's a favorite</label><input id="favDesc" placeholder="A short description..."></div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn-pub" onclick="saveNewFav()">Add to Favorites</button>
+              <button class="btn-save" onclick="document.getElementById('addFavForm').style.display='none'">Cancel</button>
+            </div>
+          </div>
+          <div id="favsList"></div>
+        </div>
+      </div>
+      <div id="ds-topcards" style="display:none;">
+        <div class="pm-wrap">
+          <div class="pm-head"><h2>Top Cards Ticker</h2><button class="btn-pub" onclick="showAddTopCard()">+ Add Ticker Card</button></div>
+          <div id="addTopCardForm" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:20px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+              <div class="ef"><label>Card Name</label><input id="topCardName" placeholder="e.g. Umbreon VMAX"></div>
+              <div class="ef"><label>Rank (1-7)</label><input id="topCardRank" type="number" min="1" max="7" placeholder="1"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+              <div class="ef"><label>Set Name (optional)</label><input id="topCardSet" placeholder="e.g. Evolving Skies"></div>
+              <div class="ef"><label>Market Price (optional)</label><input id="topCardPrice" type="number" step="0.01" min="0" placeholder="249.99"></div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn-pub" onclick="saveTopCard()">Save to Ticker</button>
+              <button class="btn-save" onclick="document.getElementById('addTopCardForm').style.display='none'">Cancel</button>
+            </div>
+          </div>
+          <div id="topCardsList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <div id="page-about" class="page">
   <header class="static-hero" aria-label="About">
@@ -380,6 +548,20 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
   </header>
   <div class="static-page-content">
     <div class="art-body" id="contact-body"><div class="loading-state"><span class="spin">&#9685;</span></div></div>
+  </div>
+</div>
+
+<div class="inline-img-modal" id="inlineImgModal">
+  <div class="inline-img-box">
+    <h3>Insert Image</h3>
+    <label>Paste an image URL</label>
+    <input type="text" id="inlineImgUrl" placeholder="https://...">
+    <label>Or upload from your computer</label>
+    <input type="file" id="inlineImgFile" accept="image/*">
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeImgModal()">Cancel</button>
+      <button class="modal-insert" onclick="insertInlineImg()">Insert Image</button>
+    </div>
   </div>
 </div>
 
@@ -550,7 +732,11 @@ function checkAdminSession() {
 }
 
 function requireLogin() {
-  window.location.href = '/admin';
+  if (isLoggedIn) { showDash(); return; }
+  checkAdminSession().then(function(ok) {
+    if (ok) showDash();
+    else showPage('login');
+  });
 }
 function toggleMobileMenu() {
   var menu = document.getElementById('mobileMenu');
@@ -597,7 +783,7 @@ function doLogin() {
 function doLogout() {
   apiFetch('/api/admin/logout', { method: 'POST' }).finally(function() {
     isLoggedIn = false;
-    showPage('home');
+    showPage('login');
     showToast('Logged out.');
   });
 }
@@ -1121,8 +1307,8 @@ showPage = function(n) {
     _showPage(n);
     return;
   }
-  var titles = { home: 'Almost Mint Condition', about: 'About — Almost Mint Condition', favorites: "AMC's Favorite Cards — Almost Mint Condition", contact: 'Contact — Almost Mint Condition' };
-  var paths = { home: '/', about: '/about', favorites: '/favorites', contact: '/contact' };
+  var titles = { home: 'Almost Mint Condition', about: 'About — Almost Mint Condition', favorites: "AMC's Favorite Cards — Almost Mint Condition", contact: 'Contact — Almost Mint Condition', login: 'Admin — Almost Mint Condition' };
+  var paths = { home: '/', about: '/about', favorites: '/favorites', contact: '/contact', login: '/admin' };
   history.pushState({ page: n }, titles[n] || n, paths[n] || '/');
   updateMeta(titles[n] || null, null);
   _showPage(n);
@@ -1132,7 +1318,12 @@ showPage = function(n) {
 // Handle browser back/forward
 window.addEventListener('popstate', function(e) {
   var path = window.location.pathname;
-  if (path === '/' || path === '') {
+  if (path === '/admin') {
+    checkAdminSession().then(function(ok) {
+      if (ok) showDash();
+      else showPage('login');
+    });
+  } else if (path === '/' || path === '') {
     _showPage('home');
   } else if (path === '/about') {
     _showPage('about');
@@ -1477,7 +1668,12 @@ function deleteTopCard(id) {
 loadTopCardsTicker();
 loadPostsFromDB().then(function() {
   var path = window.location.pathname;
-  if (path.startsWith('/article/')) {
+  if (path === '/admin') {
+    checkAdminSession().then(function(ok) {
+      if (ok) showDash();
+      else showPage('login');
+    });
+  } else if (path.startsWith('/article/')) {
     var slug = path.replace('/article/', '');
     var post = findPostBySlug(slug);
     if (post) { updateMeta(post.title, post.excerpt, post.headerImg || ''); _openArticle(post.id); }
