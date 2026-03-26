@@ -284,7 +284,14 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#F7F4EE;padding:11px 18px;border-radius:6px;font-size:13px;font-weight:600;border-left:3px solid var(--red);transform:translateY(70px);opacity:0;transition:all .28s;z-index:999;}
 .toast.show{transform:translateY(0);opacity:1;}
 @media(max-width:768px){.feat-grid{grid-template-columns:1fr;}.stat-row{grid-template-columns:1fr 1fr;}.dash{grid-template-columns:1fr;}.dash-side{display:none;}.nav-links{display:none;}.mobile-menu-btn{display:block;}.hero{padding:56px 20px 44px;}.content-area,.posts-section{padding-left:20px;padding-right:20px;}.email-footer{padding:50px 20px;}.static-hero{padding:44px 20px 48px;}.static-page-content{padding-left:20px;padding-right:20px;padding-bottom:56px;}.static-page-content .art-body{margin-top:-22px;}.about-shell{padding:20px 18px 10px;}.about-grid{grid-template-columns:1fr;}.favorites-grid{grid-template-columns:1fr;}.contact-shell{padding:20px 18px 12px;}.contact-grid{grid-template-columns:1fr;}}
-@media(max-width:768px){.article-page{padding:44px 20px 72px;}.article-layout{grid-template-columns:1fr;}.article-aside{padding-top:0;margin-top:26px;}.article-footer{margin-top:26px;}}
+@media(max-width:768px){
+  .article-page{padding:44px 20px 72px;}
+  .article-layout{grid-template-columns:1fr;}
+  .article-aside{padding-top:0;margin-top:26px;}
+  .article-footer{margin-top:26px;}
+  /* On mobile, "More from AMC" (footer) duplicates the sidebar "Keep reading" content. */
+  .article-footer-related{display:none;}
+}
 </style>
 </head>
 <body>
