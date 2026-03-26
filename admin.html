@@ -420,7 +420,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
           </div>
           <div class="editor-fields">
             <div class="ef"><label>Category</label><select id="pCat"><option>Market</option><option>Grading</option><option>News</option><option>Community</option><option>Guide</option><option>Collection</option></select></div>
-            <div class="ef"><label>Read time</label><input id="pRead" placeholder="e.g. 5 min read"></div>
+            <div class="ef"><label>Read time</label><select id="pRead"><option value="">Select read time</option><option value="5 min read">5 min read</option><option value="10 min read">10 min read</option><option value="15 min read">15 min read</option><option value="20 min read">20 min read</option></select></div>
           </div>
           <input class="title-inp" id="pTitle" placeholder="Your headline...">
           <input class="excerpt-inp" id="pExcerpt" placeholder="One-line description...">
@@ -1012,6 +1012,14 @@ function renderDraftsTable() {
   };
 }
 
+function normalizeReadTimeLabel(value) {
+  var raw = String(value || '').trim().toLowerCase();
+  if (!raw) return '';
+  var m = raw.match(/(\d+)/);
+  if (!m) return '';
+  return m[1] + ' min read';
+}
+
 function clearEditor() {
   document.getElementById('pTitle').value = '';
   document.getElementById('pExcerpt').value = '';
@@ -1034,7 +1042,7 @@ function editPost(id) {
   document.getElementById('pBody').value = p.rawBody || '';
   var spotLegacy = (p.tag || '').toLowerCase() === 'spotlight' || (p.category || '').toLowerCase() === 'spotlight';
   document.getElementById('pCat').value = spotLegacy ? 'Community' : (p.tag || 'Market');
-  document.getElementById('pRead').value = p.read;
+  document.getElementById('pRead').value = normalizeReadTimeLabel(p.read);
   document.getElementById('editingId').value = id;
   if (p.headerImg) setHeaderImg(p.headerImg);
 }
@@ -1048,7 +1056,7 @@ function editDraft(id) {
   document.getElementById('pBody').value = d.rawBody || '';
   var dSpot = (d.category || '').toLowerCase() === 'spotlight';
   document.getElementById('pCat').value = dSpot ? 'Community' : (d.category || 'Market');
-  document.getElementById('pRead').value = d.read || '';
+  document.getElementById('pRead').value = normalizeReadTimeLabel(d.read);
   document.getElementById('editingId').value = d.id;
   if (d.headerImg) setHeaderImg(d.headerImg);
 }
@@ -1086,10 +1094,11 @@ function pubDraft(id) {
 function saveDraft() {
   var t = document.getElementById('pTitle').value.trim();
   var editId = document.getElementById('editingId').value;
+  var read = normalizeReadTimeLabel(document.getElementById('pRead').value) || '5 min read';
   var draftData = { id: editId || ('d' + Date.now()), title: t || 'Untitled',
     category: document.getElementById('pCat').value, excerpt: document.getElementById('pExcerpt').value.trim(),
     rawBody: document.getElementById('pBody').value, headerImg: document.getElementById('headerImgData').value,
-    read: document.getElementById('pRead').value.trim(),
+    read: read,
     date: new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) };
   var existing = drafts.findIndex(function(d) { return d.id === draftData.id; });
   if (existing >= 0) drafts[existing] = draftData; else drafts.unshift(draftData);
@@ -1104,7 +1113,7 @@ function publishPost() {
   var cat = document.getElementById('pCat').value;
   if (!t || !b) { showToast('Add a title and content first.'); return; }
   var exc = document.getElementById('pExcerpt').value.trim();
-  var rd = document.getElementById('pRead').value.trim() || '4 min read';
+  var rd = normalizeReadTimeLabel(document.getElementById('pRead').value) || '5 min read';
   var headerImg = document.getElementById('headerImgData').value;
   var catEmojis = {'Market':'&#128200;','Grading':'&#128269;','News':'&#128240;','Community':'&#128101;','Spotlight':'&#128101;','Guide':'&#128218;','Collection':'&#128193;'};
   var editId = document.getElementById('editingId').value;
