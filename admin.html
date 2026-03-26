@@ -580,6 +580,11 @@ function apiFetch(path, options) {
   return fetch(path, opts);
 }
 
+function normalizePokemonText(value) {
+  return String(value || '')
+    .replace(/Pok(?:émon|�mon)/g, 'Pokemon');
+}
+
 function loadPostsFromDB() {
   return apiFetch('/api/posts')
     .then(function(r) { return r.json(); })
@@ -587,10 +592,10 @@ function loadPostsFromDB() {
       if (Array.isArray(data)) {
         posts = data.map(function(p) {
           return {
-            id: p.id, tag: p.tag, title: p.title, author: p.author,
-            date: p.date_published, read: p.read_time, excerpt: p.excerpt,
+            id: p.id, tag: p.tag, title: normalizePokemonText(p.title), author: normalizePokemonText(p.author),
+            date: p.date_published, read: p.read_time, excerpt: normalizePokemonText(p.excerpt),
             category: p.category, emoji: p.emoji, headerImg: p.header_img || '',
-            rawBody: p.raw_body, status: p.status
+            rawBody: normalizePokemonText(p.raw_body), status: p.status
           };
         });
       }
@@ -1092,12 +1097,12 @@ function pubDraft(id) {
   });
 }
 function saveDraft() {
-  var t = document.getElementById('pTitle').value.trim();
+  var t = normalizePokemonText(document.getElementById('pTitle').value.trim());
   var editId = document.getElementById('editingId').value;
   var read = normalizeReadTimeLabel(document.getElementById('pRead').value) || '5 min read';
   var draftData = { id: editId || ('d' + Date.now()), title: t || 'Untitled',
-    category: document.getElementById('pCat').value, excerpt: document.getElementById('pExcerpt').value.trim(),
-    rawBody: document.getElementById('pBody').value, headerImg: document.getElementById('headerImgData').value,
+    category: document.getElementById('pCat').value, excerpt: normalizePokemonText(document.getElementById('pExcerpt').value.trim()),
+    rawBody: normalizePokemonText(document.getElementById('pBody').value), headerImg: document.getElementById('headerImgData').value,
     read: read,
     date: new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) };
   var existing = drafts.findIndex(function(d) { return d.id === draftData.id; });
@@ -1108,11 +1113,11 @@ function saveDraft() {
   showToast('Saved to drafts.');
 }
 function publishPost() {
-  var t = document.getElementById('pTitle').value.trim();
-  var b = document.getElementById('pBody').value.trim();
+  var t = normalizePokemonText(document.getElementById('pTitle').value.trim());
+  var b = normalizePokemonText(document.getElementById('pBody').value.trim());
   var cat = document.getElementById('pCat').value;
   if (!t || !b) { showToast('Add a title and content first.'); return; }
-  var exc = document.getElementById('pExcerpt').value.trim();
+  var exc = normalizePokemonText(document.getElementById('pExcerpt').value.trim());
   var rd = normalizeReadTimeLabel(document.getElementById('pRead').value) || '5 min read';
   var headerImg = document.getElementById('headerImgData').value;
   var catEmojis = {'Market':'&#128200;','Grading':'&#128269;','News':'&#128240;','Community':'&#128101;','Spotlight':'&#128101;','Guide':'&#128218;','Collection':'&#128193;'};
