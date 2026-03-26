@@ -690,6 +690,11 @@ function filterFromNav(cat) {
     document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
     document.querySelectorAll('.cat-btn').forEach(function(b) { if (b.textContent.toLowerCase().indexOf(cat.toLowerCase()) >= 0) b.classList.add('active'); });
     renderPosts(cat);
+    // Mobile UX: category/tab changes happen below the fold; scroll to the updated section.
+    if (window.innerWidth <= 768) {
+      var latest = document.getElementById('latestPostsSection');
+      if (latest && latest.scrollIntoView) latest.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }, 300);
 }
 
@@ -782,6 +787,11 @@ function filterCat(cat, btn) {
   document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
   renderPosts(cat);
+  // Mobile UX: tab changes can be below the fold; scroll to updated posts.
+  if (window.innerWidth <= 768) {
+    var latest = document.getElementById('latestPostsSection');
+    if (latest && latest.scrollIntoView) latest.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 function parseBody(text) {
