@@ -691,9 +691,8 @@ function filterFromNav(cat) {
     document.querySelectorAll('.cat-btn').forEach(function(b) { if (b.textContent.toLowerCase().indexOf(cat.toLowerCase()) >= 0) b.classList.add('active'); });
     renderPosts(cat);
     // Mobile UX: category/tab changes happen below the fold; scroll to the updated section.
-    if (window.innerWidth <= 768) {
-      var latest = document.getElementById('latestPostsSection');
-      if (latest && latest.scrollIntoView) latest.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
+      setTimeout(function() { scrollToLatestPosts(); }, 60);
     }
   }, 300);
 }
@@ -788,10 +787,19 @@ function filterCat(cat, btn) {
   btn.classList.add('active');
   renderPosts(cat);
   // Mobile UX: tab changes can be below the fold; scroll to updated posts.
-  if (window.innerWidth <= 768) {
-    var latest = document.getElementById('latestPostsSection');
-    if (latest && latest.scrollIntoView) latest.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
+    setTimeout(function() { scrollToLatestPosts(); }, 60);
   }
+}
+
+function scrollToLatestPosts() {
+  var latest = document.getElementById('latestPostsSection');
+  if (!latest) return;
+  // Sticky nav is ~62px; subtract a little so the cards aren't hidden behind it.
+  var navOffset = 78;
+  var y = latest.getBoundingClientRect().top + window.pageYOffset - navOffset;
+  if (!isFinite(y) || y < 0) y = 0;
+  window.scrollTo({ top: y, behavior: 'smooth' });
 }
 
 function parseBody(text) {
