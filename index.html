@@ -96,6 +96,19 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .post-title{font-family:'Fraunces',serif;font-size:16px;font-weight:800;line-height:1.3;color:var(--ink);margin-bottom:7px;}
 .post-excerpt{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:10px;}
 .post-meta{font-size:11px;color:var(--muted);display:flex;gap:6px;align-items:center;}
+.uv-home-wrap{max-width:1140px;margin:0 auto;padding:0 28px 32px;display:none;}
+.uv-home-wrap.uv-visible{display:block;}
+.uv-home-card{background:var(--card);border:1px solid #e8e3db;border-radius:10px;padding:20px 22px;display:flex;flex-wrap:wrap;align-items:center;gap:18px;cursor:pointer;transition:transform .18s,box-shadow .18s;}
+.uv-home-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
+.uv-home-thumb{width:120px;height:90px;border-radius:8px;background:var(--ink);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:36px;}
+.uv-home-thumb img{width:100%;height:100%;object-fit:cover;}
+.uv-home-body{flex:1;min-width:200px;}
+.uv-home-kicker{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--red);text-transform:uppercase;margin-bottom:8px;}
+.uv-home-title{font-family:'Fraunces',serif;font-size:20px;font-weight:800;line-height:1.25;color:var(--ink);margin-bottom:6px;}
+.uv-home-excerpt{font-size:13px;color:var(--muted);line-height:1.55;max-width:560px;}
+.uv-home-cta{align-self:center;font-size:13px;font-weight:700;color:var(--red);text-decoration:none;white-space:nowrap;border:1px solid var(--red);padding:10px 18px;border-radius:8px;transition:background .15s,color .15s;}
+.uv-home-cta:hover{background:var(--red);color:#fff;}
+.uv-archive-note{font-size:13px;color:var(--muted);line-height:1.65;max-width:720px;margin:0 28px 24px;}
 .loading-state{text-align:center;padding:60px 20px;color:var(--muted);}
 .loading-state .spin{font-size:32px;display:inline-block;animation:spin 1s linear infinite;}
 @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
@@ -304,6 +317,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
     <a id="nav-about" onclick="showPage('about')">About</a>
     <a id="nav-favorites" onclick="showPage('favorites')">Favorites</a>
     <a id="nav-contact" onclick="showPage('contact')">Contact</a>
+    <a id="nav-undervalued" onclick="showPage('undervalued')">Undervalued picks</a>
   </div>
   <button class="mobile-menu-btn" onclick="toggleMobileMenu()">Menu</button>
 </div>
@@ -312,6 +326,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
   <a id="mnav-about" onclick="showPage('about')">About</a>
   <a id="mnav-favorites" onclick="showPage('favorites')">Favorites</a>
   <a id="mnav-contact" onclick="showPage('contact')">Contact</a>
+  <a id="mnav-undervalued" onclick="showPage('undervalued')">Undervalued picks</a>
 </div>
 
 <div id="page-home" class="page active">
@@ -340,6 +355,18 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
   <div class="content-area">
     <div class="sec-label" id="featuredLabel" style="display:none;">Featured</div>
     <div class="feat-grid" id="featuredGrid"></div>
+  </div>
+  <div class="uv-home-wrap" id="undervaluedHomeWrap" aria-live="polite">
+    <div class="sec-label">Undervalued picks</div>
+    <div class="uv-home-card" id="undervaluedHomeCard" style="display:none;">
+      <div class="uv-home-thumb" id="undervaluedHomeThumb"></div>
+      <div class="uv-home-body">
+        <div class="uv-home-kicker">Latest week</div>
+        <div class="uv-home-title" id="undervaluedHomeTitle"></div>
+        <div class="uv-home-excerpt" id="undervaluedHomeExcerpt"></div>
+      </div>
+      <a class="uv-home-cta" id="undervaluedHomeArchiveLink" href="/undervalued-picks" onclick="event.preventDefault(); showPage('undervalued');">All weeks &rarr;</a>
+    </div>
   </div>
   <div class="posts-section" id="latestPostsSection">
     <div class="sec-label">Latest Posts</div>
@@ -429,6 +456,23 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
   </header>
   <div class="static-page-content">
     <div class="art-body" id="contact-body"><div class="loading-state"><span class="spin">&#9685;</span></div></div>
+  </div>
+</div>
+
+<div id="page-undervalued" class="page">
+  <header class="static-hero" aria-label="Undervalued picks">
+    <div class="static-hero-bg">AMC</div>
+    <div class="static-hero-inner">
+      <p class="static-hero-kicker">Series</p>
+      <h1 class="static-hero-title">Undervalued <em>picks.</em></h1>
+      <p class="static-hero-desc">Weekly cards that look cheap for the art or the long game — archived here so the homepage can stay story-first.</p>
+    </div>
+  </header>
+  <div class="static-page-content">
+    <p class="uv-archive-note">Prices were fair at publish time; they move. Treat this as a log of taste and context, not live financial advice.</p>
+    <div class="posts-section" style="padding-top:0;">
+      <div class="posts-grid" id="undervaluedArchiveGrid"><div class="loading-state"><span class="spin">&#9685;</span><p style="margin-top:12px;font-size:13px;">Loading picks...</p></div></div>
+    </div>
   </div>
 </div>
 
@@ -658,12 +702,17 @@ function doLogout() {
 
 function showPage(n) {
   document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-  document.getElementById('page-' + n).classList.add('active');
+  var pageEl = document.getElementById('page-' + n);
+  if (!pageEl) return;
+  pageEl.classList.add('active');
   setActiveNav(n);
   closeMobileMenu();
   if (n === 'home') {
     loadPostsFromDB().then(function() { renderHome('all'); });
     loadTopCardsTicker();
+  }
+  if (n === 'undervalued') {
+    loadPostsFromDB().then(function() { renderUndervaluedArchive(); });
   }
   window.scrollTo(0, 0);
 }
@@ -707,16 +756,77 @@ function postMatchesNavCategory(p, cat) {
   return c === cat || t === cat;
 }
 
-function renderHome(cat) { renderFeatured(); renderPosts(cat); }
+/** Recurring "Value Watch" / undervalued picks — title match so existing posts work without DB migration. */
+function isUndervaluedSeriesPost(p) {
+  var t = (p.title || '').toLowerCase();
+  return t.indexOf('value watch') >= 0 || t.indexOf('undervalued') >= 0;
+}
+
+function getPublishedMain() {
+  return posts.filter(function(p) { return p.status === 'published' && !isUndervaluedSeriesPost(p); });
+}
+
+function getPublishedUndervalued() {
+  return posts.filter(function(p) { return p.status === 'published' && isUndervaluedSeriesPost(p); });
+}
+
+function renderHome(cat) { renderFeatured(); renderUndervaluedHomeStrip(); renderPosts(cat); }
+
+function renderUndervaluedHomeStrip() {
+  var wrap = document.getElementById('undervaluedHomeWrap');
+  var card = document.getElementById('undervaluedHomeCard');
+  if (!wrap || !card) return;
+  var uv = getPublishedUndervalued();
+  if (uv.length === 0) {
+    wrap.classList.remove('uv-visible');
+    card.style.display = 'none';
+    return;
+  }
+  wrap.classList.add('uv-visible');
+  card.style.display = 'flex';
+  var latest = uv[0];
+  document.getElementById('undervaluedHomeTitle').textContent = latest.title;
+  document.getElementById('undervaluedHomeExcerpt').textContent = latest.excerpt || '';
+  var th = document.getElementById('undervaluedHomeThumb');
+  th.innerHTML = latest.headerImg
+    ? '<img src="' + latest.headerImg + '" alt="">'
+    : '<span aria-hidden="true">' + (latest.emoji || '&#128200;') + '</span>';
+  card.onclick = function(e) {
+    if (e.target.closest('a.uv-home-cta')) return;
+    openArticle(latest.id);
+  };
+}
+
+function renderUndervaluedArchive() {
+  var g = document.getElementById('undervaluedArchiveGrid');
+  if (!g) return;
+  var uv = getPublishedUndervalued();
+  if (uv.length === 0) {
+    g.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><h3>No picks yet</h3><p>When you publish a week, put <strong>Value Watch</strong> or <strong>Undervalued</strong> in the title so it is grouped here.</p></div>';
+    return;
+  }
+  var html = '';
+  uv.forEach(function(p) {
+    var thumbContent = p.headerImg
+      ? '<img src="' + p.headerImg + '" style="width:100%;height:100%;object-fit:cover;">'
+      : (p.emoji || '&#128200;');
+    html += '<div class="post-card" data-id="' + p.id + '"><div class="post-thumb">' + thumbContent + '</div><div class="post-card-body"><div class="post-pill">' + p.tag + '</div><div class="post-title">' + p.title + '</div><div class="post-excerpt">' + p.excerpt + '</div><div class="post-meta"><span>' + p.author + '</span><span>&middot;</span><span>' + p.date + '</span><span>&middot;</span><span>' + p.read + '</span></div></div></div>';
+  });
+  g.innerHTML = html;
+  g.onclick = function(e) {
+    var c = e.target.closest('[data-id]');
+    if (c) openArticle(c.dataset.id);
+  };
+}
 
 function renderFeatured() {
   var fg = document.getElementById('featuredGrid');
   var fl = document.getElementById('featuredLabel');
-  var published = posts.filter(function(p) { return p.status === 'published'; });
-  if (published.length === 0) { fg.innerHTML = ''; fl.style.display = 'none'; return; }
+  var publishedMain = getPublishedMain();
+  if (publishedMain.length === 0) { fg.innerHTML = ''; fl.style.display = 'none'; return; }
   fl.style.display = 'flex';
-  var featured = published[0];
-  var sides = published.slice(1, 4);
+  var featured = publishedMain[0];
+  var sides = publishedMain.slice(1, 4);
   var thumbImg = featured.headerImg ? '<img src="' + featured.headerImg + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">' : '<div class="feat-thumb-bg">&#128196;</div>';
   var sidesHtml = '';
   sides.forEach(function(p) {
@@ -739,21 +849,22 @@ function renderPosts(cat) {
   var g = document.getElementById('postsGrid');
   var section = document.getElementById('latestPostsSection');
   var published = posts.filter(function(p) { return p.status === 'published'; });
-  // All posts fit in Featured (hero + 3 side slots): hide this whole section on "All Posts" — cleaner than an empty feed
-  if (section && cat === 'all' && published.length >= 1 && published.length <= 4) {
+  var publishedMain = getPublishedMain();
+  // All main (non-series) posts fit in Featured (hero + 3 side slots): hide Latest when nothing left to list
+  if (section && cat === 'all' && publishedMain.length >= 1 && publishedMain.length <= 4) {
     section.style.display = 'none';
     return;
   }
   if (section) section.style.display = '';
-  // Featured uses newest post as hero + next 3 in the side stack — don't repeat those here
+  // Featured uses newest main posts only — don't repeat those here; never list undervalued series in this grid
   var featuredIds = {};
-  var featuredCount = Math.min(4, published.length);
-  for (var fi = 0; fi < featuredCount; fi++) featuredIds[published[fi].id] = true;
+  var featuredCount = Math.min(4, publishedMain.length);
+  for (var fi = 0; fi < featuredCount; fi++) featuredIds[publishedMain[fi].id] = true;
   var f;
   if (cat === 'all') {
-    f = published.slice(4);
+    f = publishedMain.slice(4);
   } else {
-    f = published.filter(function(p) {
+    f = publishedMain.filter(function(p) {
       if (featuredIds[p.id]) return false;
       return postMatchesNavCategory(p, cat);
     });
@@ -1241,8 +1352,8 @@ showPage = function(n) {
     _showPage(n);
     return;
   }
-  var titles = { home: 'Almost Mint Condition', about: 'About — Almost Mint Condition', favorites: "AMC's Favorite Cards — Almost Mint Condition", contact: 'Contact — Almost Mint Condition' };
-  var paths = { home: '/', about: '/about', favorites: '/favorites', contact: '/contact' };
+  var titles = { home: 'Almost Mint Condition', about: 'About — Almost Mint Condition', favorites: "AMC's Favorite Cards — Almost Mint Condition", contact: 'Contact — Almost Mint Condition', undervalued: 'Undervalued picks — Almost Mint Condition' };
+  var paths = { home: '/', about: '/about', favorites: '/favorites', contact: '/contact', undervalued: '/undervalued-picks' };
   history.pushState({ page: n }, titles[n] || n, paths[n] || '/');
   updateMeta(titles[n] || null, null);
   _showPage(n);
@@ -1263,6 +1374,8 @@ window.addEventListener('popstate', function(e) {
   } else if (path === '/contact') {
     _showPage('contact');
     loadPage('contact', 'contact-body');
+  } else if (path === '/undervalued-picks') {
+    _showPage('undervalued');
   } else if (path.startsWith('/article/')) {
     var slug = path.replace('/article/', '');
     var post = findPostBySlug(slug);
@@ -1611,6 +1724,9 @@ loadPostsFromDB().then(function() {
   } else if (path === '/contact') {
     _showPage('contact');
     loadPage('contact', 'contact-body');
+  } else if (path === '/undervalued-picks') {
+    updateMeta('Undervalued picks — Almost Mint Condition', 'Weekly undervalued card picks — archived by week.');
+    _showPage('undervalued');
   } else {
     renderHome('all');
   }

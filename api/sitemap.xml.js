@@ -99,6 +99,12 @@ module.exports = async (req, res) => {
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+  </url>`,
+    `  <url>
+    <loc>${SITE_ORIGIN}/undervalued-picks</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>`
   ].join('\n');
 
