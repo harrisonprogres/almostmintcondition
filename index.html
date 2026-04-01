@@ -130,6 +130,9 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .article-aside{min-width:0;padding-top:22px;}
 .aside-kicker{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;color:var(--red-light);text-transform:uppercase;margin-bottom:12px;}
 .related-posts{display:flex;flex-direction:column;gap:12px;}
+.related-undervalued-section{margin-bottom:28px;padding-bottom:22px;border-bottom:1px solid var(--border);}
+.related-archive-link{display:inline-block;margin-top:12px;font-size:12px;font-weight:700;color:var(--red);text-decoration:none;}
+.related-archive-link:hover{text-decoration:underline;}
 .related-post-link{display:flex;gap:12px;align-items:flex-start;border:1px solid rgba(28,25,23,.09);border-radius:12px;padding:12px 14px;background:rgba(255,255,255,.55);text-decoration:none;transition:transform .18s, box-shadow .18s, border-color .18s;}
 .related-post-link:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(28,25,23,.10);border-color:rgba(208,74,42,.35);}
 .related-post-thumb{width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;background:#f3efe8;}
@@ -397,6 +400,11 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
       </main>
 
       <aside class="article-aside" aria-label="Related articles">
+        <div id="relatedUndervaluedSection" class="related-undervalued-section" style="display:none;">
+          <div class="aside-kicker">More undervalued picks</div>
+          <div id="relatedUndervaluedSidebar" class="related-posts"></div>
+          <a href="/undervalued-picks" class="related-archive-link" onclick="event.preventDefault(); showPage('undervalued');">Browse all weeks &rarr;</a>
+        </div>
         <div class="aside-kicker">Keep reading</div>
         <div id="relatedPostsSidebar" class="related-posts"></div>
       </aside>
@@ -953,34 +961,33 @@ function openArticle(id) {
   showPage('article');
 }
 
-function renderRelatedArticles(curr) {
-  var sidebar = document.getElementById('relatedPostsSidebar');
-  var footer = document.getElementById('relatedPostsFooter');
-  if (!sidebar && !footer) return;
+/** "Keep reading" / footer: same category or newest, excluding undervalued series posts. */
+function collectStructuredRelated(curr, limit) {
   var related = [];
   var used = {};
-
-  // Primary: same tag/category (best proxy for "chain reading" without schema changes).
+  var cap = limit || 5;
   posts.forEach(function(p) {
-    if (p.id === curr.id) return;
-    if (related.length >= 5) return;
+    if (related.length >= cap) return;
+    if (p.id === curr.id || isUndervaluedSeriesPost(p)) return;
     var sameTag = (p.tag || '').toLowerCase() === (curr.tag || '').toLowerCase();
     var sameCat = (p.category || '').toLowerCase() === (curr.category || '').toLowerCase();
     if (sameTag || sameCat) {
-      if (!used[p.id]) { used[p.id] = true; related.push(p); }
+      used[p.id] = true;
+      related.push(p);
     }
   });
-
-  // Fallback: newest other posts.
   posts.forEach(function(p) {
-    if (related.length >= 5) return;
-    if (p.id === curr.id || used[p.id]) return;
+    if (related.length >= cap) return;
+    if (p.id === curr.id || isUndervaluedSeriesPost(p) || used[p.id]) return;
     used[p.id] = true;
     related.push(p);
   });
+  return related;
+}
 
-  var emptyMsg = '<div style="font-size:13px;color:var(--muted);line-height:1.6;">More posts coming soon.</div>';
-  var html = related.slice(0, 5).map(function(p) {
+function buildRelatedLinksHtml(related) {
+  if (!related || !related.length) return '';
+  return related.map(function(p) {
     var url = '/article/' + slugify(p.title);
     var title = esc(p.title);
     var meta = esc(p.date) + ' • ' + esc(p.read);
@@ -995,9 +1002,38 @@ function renderRelatedArticles(curr) {
       '</div>' +
       '</a>';
   }).join('');
+}
 
-  if (sidebar) sidebar.innerHTML = html || emptyMsg;
-  if (footer) footer.innerHTML = html || emptyMsg;
+function renderRelatedArticles(curr) {
+  var sidebar = document.getElementById('relatedPostsSidebar');
+  var footer = document.getElementById('relatedPostsFooter');
+  var uvSection = document.getElementById('relatedUndervaluedSection');
+  var uvSidebar = document.getElementById('relatedUndervaluedSidebar');
+  if (!sidebar && !footer) return;
+
+  var structured = collectStructuredRelated(curr, 5);
+  var structuredHtml = buildRelatedLinksHtml(structured);
+  var emptyMsg = '<div style="font-size:13px;color:var(--muted);line-height:1.6;">More posts coming soon.</div>';
+
+  if (uvSection && uvSidebar) {
+    if (isUndervaluedSeriesPost(curr)) {
+      uvSection.style.display = '';
+      var uvRelated = [];
+      posts.forEach(function(p) {
+        if (uvRelated.length >= 5) return;
+        if (p.id === curr.id) return;
+        if (!isUndervaluedSeriesPost(p)) return;
+        uvRelated.push(p);
+      });
+      var uvHtml = buildRelatedLinksHtml(uvRelated);
+      uvSidebar.innerHTML = uvHtml || '<div style="font-size:13px;color:var(--muted);line-height:1.6;">Other weeks will show here as you publish more.</div>';
+    } else {
+      uvSection.style.display = 'none';
+    }
+  }
+
+  if (sidebar) sidebar.innerHTML = structuredHtml || emptyMsg;
+  if (footer) footer.innerHTML = structuredHtml || emptyMsg;
 }
 
 function renderDash() {
