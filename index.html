@@ -349,6 +349,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
   <div class="cats">
     <button class="cat-btn active" onclick="filterCat('all',this)">All Posts</button>
     <button class="cat-btn" onclick="filterCat('market',this)">Market</button>
+    <button class="cat-btn" onclick="filterCat('underrated',this)">Underrated picks</button>
     <button class="cat-btn" onclick="filterCat('grading',this)">Grading</button>
     <button class="cat-btn" onclick="filterCat('news',this)">News</button>
     <button class="cat-btn" onclick="filterCat('community',this)">Community</button>
@@ -764,10 +765,11 @@ function postMatchesNavCategory(p, cat) {
   return c === cat || t === cat;
 }
 
-/** Recurring "Value Watch" / undervalued picks — title match so existing posts work without DB migration. */
+/** Recurring picks are now manually assigned via the "Underrated" category. */
 function isUndervaluedSeriesPost(p) {
-  var t = (p.title || '').toLowerCase();
-  return t.indexOf('value watch') >= 0 || t.indexOf('undervalued') >= 0;
+  var c = (p.category || '').toLowerCase();
+  var t = (p.tag || '').toString().toLowerCase();
+  return c === 'underrated' || t === 'underrated';
 }
 
 function getPublishedMain() {
@@ -1151,7 +1153,7 @@ function deleteDraft(id) {
 function pubDraft(id) {
   var d = drafts.find(function(x) { return x.id === id; });
   if (!d) return;
-  var catEmojis = {'Market':'&#128200;','Grading':'&#128269;','News':'&#128240;','Community':'&#128101;','Spotlight':'&#128101;','Guide':'&#128218;','Collection':'&#128193;'};
+  var catEmojis = {'Market':'&#128200;','Underrated':'&#128200;','Grading':'&#128269;','News':'&#128240;','Community':'&#128101;','Spotlight':'&#128101;','Guide':'&#128218;','Collection':'&#128193;'};
   var newPost = { id: d.id, tag: d.category, title: d.title || 'Untitled', author: 'AMC Staff',
     date: new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}),
     read: d.read || '4 min read', excerpt: d.excerpt || '', category: d.category.toLowerCase(),
@@ -1187,7 +1189,7 @@ function publishPost() {
   var exc = normalizePokemonText(document.getElementById('pExcerpt').value.trim());
   var rd = document.getElementById('pRead').value.trim() || '4 min read';
   var headerImg = document.getElementById('headerImgData').value;
-  var catEmojis = {'Market':'&#128200;','Grading':'&#128269;','News':'&#128240;','Community':'&#128101;','Spotlight':'&#128101;','Guide':'&#128218;','Collection':'&#128193;'};
+  var catEmojis = {'Market':'&#128200;','Underrated':'&#128200;','Grading':'&#128269;','News':'&#128240;','Community':'&#128101;','Spotlight':'&#128101;','Guide':'&#128218;','Collection':'&#128193;'};
   var editId = document.getElementById('editingId').value;
   var postData = { id: (editId && posts.find(function(p) { return p.id === editId; })) ? editId : ('p' + Date.now()),
     tag: cat, title: t, author: 'AMC Staff',
