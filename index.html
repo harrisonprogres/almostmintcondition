@@ -61,7 +61,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .pick-item{font-size:12px;font-weight:600;color:rgba(247,244,238,0.75);white-space:nowrap;}
 .pick-item span{color:var(--red-light);font-family:'JetBrains Mono',monospace;font-size:10px;margin-left:4px;}
 .pick-ticker-placeholder{opacity:0.55;font-weight:500;font-style:italic;}
-.cats{background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;display:flex;overflow-x:auto;}
+.cats{background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;display:flex;overflow-x:auto;position:sticky;top:62px;z-index:85;}
 .cat-btn{background:none;border:none;border-bottom:2px solid transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);padding:13px 16px;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .cat-btn.active{color:var(--ink);border-bottom-color:var(--red);font-weight:700;}
 .content-area{max-width:1140px;margin:0 auto;padding:42px 28px 0;}
@@ -87,6 +87,8 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .side-title{font-family:'Fraunces',serif;font-size:15px;font-weight:800;line-height:1.3;color:var(--ink);margin-bottom:8px;}
 .side-meta{font-size:11px;color:var(--muted);}
 .posts-section{max-width:1140px;margin:0 auto;padding:4px 28px 0;}
+.posts-filter-status{font-size:12px;color:var(--muted);margin:-8px 0 14px;}
+.posts-filter-status strong{color:var(--ink);}
 .posts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px;}
 .post-card{background:var(--card);border:1px solid #e8e3db;border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s;}
 .post-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);}
@@ -299,7 +301,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .modal-insert{background:var(--red);color:white;border:none;border-radius:4px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
 .toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#F7F4EE;padding:11px 18px;border-radius:6px;font-size:13px;font-weight:600;border-left:3px solid var(--red);transform:translateY(70px);opacity:0;transition:all .28s;z-index:999;}
 .toast.show{transform:translateY(0);opacity:1;}
-@media(max-width:768px){.feat-grid{grid-template-columns:1fr;}.stat-row{grid-template-columns:1fr 1fr;}.dash{grid-template-columns:1fr;}.dash-side{display:none;}.nav-links{display:none;}.mobile-menu-btn{display:block;}.hero{padding:56px 20px 44px;}.content-area,.posts-section{padding-left:20px;padding-right:20px;}.email-footer{padding:50px 20px;}.static-hero{padding:44px 20px 48px;}.static-page-content{padding-left:20px;padding-right:20px;padding-bottom:56px;}.static-page-content .art-body{margin-top:-22px;}.about-shell{padding:20px 18px 10px;}.about-grid{grid-template-columns:1fr;}.favorites-grid{grid-template-columns:1fr;}.contact-shell{padding:20px 18px 12px;}.contact-grid{grid-template-columns:1fr;}}
+@media(max-width:768px){.feat-grid{grid-template-columns:1fr;}.stat-row{grid-template-columns:1fr 1fr;}.dash{grid-template-columns:1fr;}.dash-side{display:none;}.nav-links{display:none;}.mobile-menu-btn{display:block;}.hero{padding:56px 20px 44px;}.content-area,.posts-section{padding-left:20px;padding-right:20px;}.email-footer{padding:50px 20px;}.static-hero{padding:44px 20px 48px;}.static-page-content{padding-left:20px;padding-right:20px;padding-bottom:56px;}.static-page-content .art-body{margin-top:-22px;}.about-shell{padding:20px 18px 10px;}.about-grid{grid-template-columns:1fr;}.favorites-grid{grid-template-columns:1fr;}.contact-shell{padding:20px 18px 12px;}.contact-grid{grid-template-columns:1fr;}.cats{top:62px;}}
 @media(max-width:768px){
   .article-page{padding:44px 20px 72px;}
   .article-layout{grid-template-columns:1fr;}
@@ -374,6 +376,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
   </div>
   <div class="posts-section" id="latestPostsSection">
     <div class="sec-label">Latest Posts</div>
+    <div class="posts-filter-status" id="postsFilterStatus">Showing: <strong>All Posts</strong></div>
     <div class="posts-grid" id="postsGrid"><div class="loading-state"><span class="spin">&#9685;</span><p style="margin-top:12px;font-size:13px;">Loading posts...</p></div></div>
   </div>
   <div class="email-footer">
@@ -857,7 +860,19 @@ function renderFeatured() {
 function renderPosts(cat) {
   if (cat === 'spotlight') cat = 'community';
   var g = document.getElementById('postsGrid');
+  var status = document.getElementById('postsFilterStatus');
   var section = document.getElementById('latestPostsSection');
+  var statusMap = {
+    all: 'All Posts',
+    market: 'Market',
+    underrated: 'Underrated picks',
+    grading: 'Grading',
+    news: 'News',
+    community: 'Community',
+    guide: 'Guides',
+    collection: 'Collection'
+  };
+  if (status) status.innerHTML = 'Showing: <strong>' + (statusMap[cat] || 'All Posts') + '</strong>';
   var published = posts.filter(function(p) { return p.status === 'published'; });
   var publishedMain = getPublishedMain();
   // All main (non-series) posts fit in Featured (hero + 3 side slots): hide Latest when nothing left to list
@@ -907,8 +922,8 @@ function filterCat(cat, btn) {
   document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
   renderPosts(cat);
-  // Mobile UX: tab changes can be below the fold; scroll to updated posts.
-  if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
+  // On smaller/tighter layouts, keep the changed results in view.
+  if ((window.matchMedia && window.matchMedia('(max-width: 1200px)').matches) || window.innerHeight < 900) {
     setTimeout(function() { scrollToLatestPosts(); }, 60);
   }
 }
