@@ -906,6 +906,11 @@ function getLatestPublishedPost() {
   return sorted.length ? sorted[0] : null;
 }
 
+function getLatestMainPost() {
+  var sorted = getPublishedChronological().filter(function(p) { return !isUndervaluedSeriesPost(p); });
+  return sorted.length ? sorted[0] : null;
+}
+
 function getStartHerePreviewMode() {
   try {
     var params = new URLSearchParams(window.location.search || '');
@@ -931,7 +936,8 @@ function renderStartHere() {
   var wrap = document.getElementById('startHereWrap');
   if (!wrap) return;
   var targets = findStartHereTargets();
-  var latest = getLatestPublishedPost();
+  var latestMain = getLatestMainPost();
+  var latestValueWatch = targets.valuewatch || null;
   var kicker = document.getElementById('startHereKicker');
   var label = document.getElementById('startHereLabel');
   var previewMode = getStartHerePreviewMode();
@@ -941,7 +947,7 @@ function renderStartHere() {
     seenBefore = localStorage.getItem(START_HERE_SEEN_KEY) === '1';
     lastSeenPostId = localStorage.getItem(START_HERE_LAST_SEEN_POST_KEY) || '';
   } catch (_) {}
-  startHereLatestReleaseId = latest && latest.id ? latest.id : '';
+  startHereLatestReleaseId = latestMain && latestMain.id ? latestMain.id : '';
   if (previewMode === 'new' || (!previewMode && !seenBefore)) {
     if (kicker) kicker.textContent = 'New here?';
     if (label) label.textContent = 'Start with';
@@ -952,11 +958,11 @@ function renderStartHere() {
     return;
   }
   if (kicker) kicker.textContent = 'Welcome back';
-  var hasNewRelease = previewMode === 'updated' ? true : (previewMode === 'uptodate' ? false : !!(latest && latest.id && latest.id !== lastSeenPostId));
+  var hasNewRelease = previewMode === 'updated' ? true : (previewMode === 'uptodate' ? false : !!(latestMain && latestMain.id && latestMain.id !== lastSeenPostId));
   if (label) label.textContent = hasNewRelease ? 'New this week' : "You're up to date";
-  setStartHereLink('startHereLink1', hasNewRelease ? 'Latest article' : 'All Articles', hasNewRelease ? 'article' : 'page', hasNewRelease ? latest.id : 'articles');
-  setStartHereLink('startHereLink2', 'Latest Value Watch', 'article', targets.valuewatch && targets.valuewatch.id);
-  setStartHereLink('startHereLink3', 'View archive', 'page', 'articles');
+  setStartHereLink('startHereLink1', 'Latest article', 'article', latestMain && latestMain.id);
+  setStartHereLink('startHereLink2', 'Latest Value Watch', 'article', latestValueWatch && latestValueWatch.id);
+  setStartHereLink('startHereLink3', null, null, null);
 }
 
 function openStartHereAction(linkId) {
