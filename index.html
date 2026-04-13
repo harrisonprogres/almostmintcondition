@@ -46,6 +46,8 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .mobile-menu{display:none;position:fixed;top:62px;left:0;right:0;background:rgba(28,25,23,.98);border-bottom:1px solid rgba(255,255,255,.08);z-index:120;padding:10px 18px 14px;}
 .mobile-menu a{display:block;color:rgba(247,244,238,.7);text-decoration:none;padding:10px 8px;font-size:14px;font-weight:600;border-radius:6px;}
 .mobile-menu a.active,.mobile-menu a:hover{color:#F7F4EE;background:rgba(255,255,255,.06);}
+.read-progress{position:fixed;top:62px;left:0;width:100%;height:6px;background:rgba(28,25,23,.16);z-index:110;display:none;box-shadow:0 1px 0 rgba(255,255,255,.18) inset;}
+.read-progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--red) 0%,var(--red-light) 100%);transition:width .12s linear;box-shadow:0 0 12px rgba(208,74,42,.45);}
 .write-btn{background:linear-gradient(135deg,var(--red) 0%,var(--red-light) 100%);color:white;border:none;border-radius:7px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;padding:9px 16px;cursor:pointer;box-shadow:0 8px 22px rgba(208,74,42,.3);}
 .page{display:none;}.page.active{display:block;}
 .hero{background:linear-gradient(180deg,#231f1c 0%,var(--ink) 65%);padding:64px 28px 52px;text-align:center;position:relative;overflow:hidden;}
@@ -112,10 +114,20 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .uv-home-cta:hover{background:var(--red);color:#fff;}
 .all-articles-home-wrap{max-width:1140px;margin:16px auto 0;padding:0 28px 20px;display:none;}
 .all-articles-home-wrap.archive-visible{display:block;}
-.archive-controls{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 20px;}
+.archive-controls{margin:8px 0 20px;}
+.archive-filters{display:flex;flex-wrap:wrap;gap:8px;min-width:0;}
 .archive-chip{background:#f3efe8;border:1px solid var(--border);border-radius:999px;padding:7px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;}
 .archive-chip:hover{border-color:#d9d1c5;color:var(--ink);}
 .archive-chip.active{background:#fff;border-color:var(--red);color:var(--red);font-weight:700;}
+.archive-sort-inline{display:flex;align-items:center;gap:8px;white-space:nowrap;margin:0 0 10px;}
+.archive-sort-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.archive-sort-btn{background:none;border:none;padding:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;}
+.archive-sort-btn:hover{color:var(--ink);}
+.archive-sort-btn.active{color:var(--red);}
+.archive-sort-sep{color:var(--border);}
+.archive-search{margin:4px 0 12px;}
+.archive-search-input{width:100%;max-width:none;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--ink);}
+.archive-search-input:focus{outline:none;border-color:#d5c6b5;box-shadow:0 0 0 2px rgba(178,59,28,.08);}
 .uv-archive-note{font-size:13px;color:var(--muted);line-height:1.65;max-width:720px;margin:0 28px 24px;}
 .loading-state{text-align:center;padding:60px 20px;color:var(--muted);}
 .loading-state .spin{font-size:32px;display:inline-block;animation:spin 1s linear infinite;}
@@ -341,6 +353,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
   <a id="mnav-favorites" onclick="showPage('favorites')">Favorites</a>
   <a id="mnav-contact" onclick="showPage('contact')">Contact</a>
 </div>
+<div class="read-progress" id="readProgress"><div class="read-progress-fill" id="readProgressFill"></div></div>
 
 <div id="page-home" class="page active">
   <div class="hero">
@@ -518,15 +531,26 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
   </header>
   <div class="static-page-content">
     <div class="posts-section" style="padding-top:0;">
-      <div class="archive-controls" id="allArticlesFilters">
-        <button class="archive-chip active" onclick="filterAllArticles('all', this)">All</button>
-        <button class="archive-chip" onclick="filterAllArticles('market', this)">Market</button>
-        <button class="archive-chip" onclick="filterAllArticles('grading', this)">Grading</button>
-        <button class="archive-chip" onclick="filterAllArticles('news', this)">News</button>
-        <button class="archive-chip" onclick="filterAllArticles('community', this)">Community</button>
-        <button class="archive-chip" onclick="filterAllArticles('guide', this)">Guides</button>
-        <button class="archive-chip" onclick="filterAllArticles('collection', this)">Collection</button>
-        <button class="archive-chip" onclick="filterAllArticles('underrated', this)">Undervalued</button>
+      <div class="archive-search">
+        <input id="allArticlesSearch" class="archive-search-input" type="text" placeholder="Search all articles by title, excerpt, or category..." oninput="updateAllArticlesSearch(this.value)">
+      </div>
+      <div class="archive-controls">
+        <div class="archive-sort-inline" id="allArticlesSortControls">
+          <span class="archive-sort-label">Sort</span>
+          <button class="archive-sort-btn active" onclick="sortAllArticles('newest', this)">Newest</button>
+          <span class="archive-sort-sep">/</span>
+          <button class="archive-sort-btn" onclick="sortAllArticles('oldest', this)">Oldest</button>
+        </div>
+        <div class="archive-filters" id="allArticlesFilters">
+          <button class="archive-chip active" onclick="filterAllArticles('all', this)">All</button>
+          <button class="archive-chip" onclick="filterAllArticles('market', this)">Market</button>
+          <button class="archive-chip" onclick="filterAllArticles('grading', this)">Grading</button>
+          <button class="archive-chip" onclick="filterAllArticles('news', this)">News</button>
+          <button class="archive-chip" onclick="filterAllArticles('community', this)">Community</button>
+          <button class="archive-chip" onclick="filterAllArticles('guide', this)">Guides</button>
+          <button class="archive-chip" onclick="filterAllArticles('collection', this)">Collection</button>
+          <button class="archive-chip" onclick="filterAllArticles('underrated', this)">Undervalued</button>
+        </div>
       </div>
       <div class="posts-grid" id="allArticlesGrid"><div class="loading-state"><span class="spin">&#9685;</span><p style="margin-top:12px;font-size:13px;">Loading archive...</p></div></div>
     </div>
@@ -542,6 +566,8 @@ var isLoggedIn = false;
 var posts = [];
 var drafts = loadDrafts();
 var allArticlesFilter = 'all';
+var allArticlesQuery = '';
+var allArticlesSort = 'newest';
 
 function apiFetch(path, options) {
   var opts = options || {};
@@ -775,6 +801,7 @@ function showPage(n) {
   if (n === 'articles') {
     loadPostsFromDB().then(function() { renderAllArticlesArchive(); });
   }
+  toggleReadProgress(n === 'article');
   window.scrollTo(0, 0);
 }
 function showDash() {
@@ -854,7 +881,9 @@ function renderUndervaluedHomeStrip() {
   var latest = uv[0];
   document.querySelector('#undervaluedHomeCard .uv-home-kicker').textContent = isValueWatchPost(latest) ? ('AMC Value Watch • Updated ' + (latest.date || 'this week')) : 'Latest week';
   document.getElementById('undervaluedHomeTitle').textContent = latest.title;
-  document.getElementById('undervaluedHomeExcerpt').textContent = latest.excerpt || '';
+  document.getElementById('undervaluedHomeExcerpt').textContent = isValueWatchPost(latest)
+    ? 'Weekly market watch: value picks, trend checks, and rotation risk.'
+    : (latest.excerpt || '');
   var th = document.getElementById('undervaluedHomeThumb');
   th.innerHTML = latest.headerImg
     ? '<img src="' + latest.headerImg + '" alt="">'
@@ -895,7 +924,7 @@ function getPublishedChronological() {
       var ad = Date.parse(a.date || '');
       var bd = Date.parse(b.date || '');
       if (isNaN(ad) || isNaN(bd)) return 0;
-      return bd - ad;
+      return allArticlesSort === 'oldest' ? (ad - bd) : (bd - ad);
     });
 }
 
@@ -925,8 +954,18 @@ function renderAllArticlesArchive() {
       return postMatchesNavCategory(p, allArticlesFilter);
     });
   }
+  if (allArticlesQuery) {
+    var needle = allArticlesQuery.toLowerCase();
+    allPosts = allPosts.filter(function(p) {
+      var title = (p.title || '').toLowerCase();
+      var excerpt = (p.excerpt || '').toLowerCase();
+      var tag = (p.tag || '').toLowerCase();
+      var category = (p.category || '').toLowerCase();
+      return title.indexOf(needle) >= 0 || excerpt.indexOf(needle) >= 0 || tag.indexOf(needle) >= 0 || category.indexOf(needle) >= 0;
+    });
+  }
   if (allPosts.length === 0) {
-    g.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><h3>No articles yet</h3><p>Publish your first article to build the archive.</p></div>';
+    g.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><h3>No matches found</h3><p>Try a different keyword or category.</p></div>';
     return;
   }
   var html = '';
@@ -949,6 +988,44 @@ function filterAllArticles(cat, btn) {
   if (scope) scope.querySelectorAll('.archive-chip').forEach(function(chip) { chip.classList.remove('active'); });
   if (btn) btn.classList.add('active');
   renderAllArticlesArchive();
+}
+
+function updateAllArticlesSearch(value) {
+  allArticlesQuery = String(value || '').trim();
+  renderAllArticlesArchive();
+}
+
+function sortAllArticles(order, btn) {
+  allArticlesSort = order === 'oldest' ? 'oldest' : 'newest';
+  var scope = document.getElementById('allArticlesSortControls');
+  if (scope) scope.querySelectorAll('.archive-sort-btn').forEach(function(chip) { chip.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderAllArticlesArchive();
+}
+
+function toggleReadProgress(show) {
+  var bar = document.getElementById('readProgress');
+  if (!bar) return;
+  bar.style.display = show ? 'block' : 'none';
+  if (!show) {
+    var fill = document.getElementById('readProgressFill');
+    if (fill) fill.style.width = '0%';
+  }
+}
+
+function updateReadProgress() {
+  var bar = document.getElementById('readProgress');
+  var fill = document.getElementById('readProgressFill');
+  var articlePage = document.getElementById('page-article');
+  var articleBody = document.getElementById('art-body');
+  if (!bar || !fill || !articlePage || !articlePage.classList.contains('active') || !articleBody) return;
+  var rect = articleBody.getBoundingClientRect();
+  var pageTop = window.scrollY + rect.top;
+  var bodyHeight = articleBody.offsetHeight;
+  var viewport = window.innerHeight || document.documentElement.clientHeight || 1;
+  var total = Math.max(bodyHeight - viewport * 0.55, 1);
+  var current = Math.min(Math.max(window.scrollY - pageTop + viewport * 0.25, 0), total);
+  fill.style.width = ((current / total) * 100).toFixed(2) + '%';
 }
 
 function renderFeatured() {
@@ -1095,6 +1172,7 @@ function openArticle(id) {
   document.getElementById('art-body').innerHTML = parseBody(a.rawBody || '');
   renderRelatedArticles(a);
   showPage('article');
+  updateReadProgress();
 }
 
 /** "Keep reading" / footer: same category or newest, excluding undervalued series posts. */
@@ -1910,6 +1988,8 @@ loadPostsFromDB().then(function() {
     renderHome('all');
   }
 });
+window.addEventListener('scroll', updateReadProgress, { passive: true });
+window.addEventListener('resize', updateReadProgress);
 </script>
 </body>
 </html>
