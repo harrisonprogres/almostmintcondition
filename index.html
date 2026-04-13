@@ -591,6 +591,8 @@ var allArticlesSort = 'newest';
 var START_HERE_SEEN_KEY = 'amc_seen_home_v1';
 var START_HERE_LAST_SEEN_POST_KEY = 'amc_last_seen_post_id_v1';
 var startHereLatestReleaseId = '';
+var startHereAnnouncement = null;
+var startHereAnnouncementLoaded = false;
 
 function apiFetch(path, options) {
   var opts = options || {};
@@ -920,6 +922,45 @@ function getStartHerePreviewMode() {
   return '';
 }
 
+function parseStartHereAnnouncement(raw) {
+  var text = String(raw || '').trim();
+  if (!text) return null;
+  var lines = text.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
+  var data = { message: '', linkText: '', linkTarget: '' };
+  lines.forEach(function(line) {
+    var idx = line.indexOf(':');
+    if (idx <= 0) return;
+    var key = line.slice(0, idx).trim().toLowerCase();
+    var val = line.slice(idx + 1).trim();
+    if (!val) return;
+    if (key === 'message') data.message = val;
+    if (key === 'link_text') data.linkText = val;
+    if (key === 'link_target') data.linkTarget = val;
+  });
+  if (!data.message) data.message = text;
+  return data;
+}
+
+function loadStartHereAnnouncement() {
+  if (startHereAnnouncementLoaded) return Promise.resolve(startHereAnnouncement);
+  return apiFetch('/api/pages?id=home_update_bar')
+    .then(function(r) { return r.json(); })
+    .then(function(rows) {
+      startHereAnnouncementLoaded = true;
+      if (Array.isArray(rows) && rows[0] && rows[0].content) {
+        startHereAnnouncement = parseStartHereAnnouncement(rows[0].content);
+      } else {
+        startHereAnnouncement = null;
+      }
+      return startHereAnnouncement;
+    })
+    .catch(function() {
+      startHereAnnouncementLoaded = true;
+      startHereAnnouncement = null;
+      return null;
+    });
+}
+
 function setStartHereLink(id, label, actionType, actionTarget) {
   var link = document.getElementById(id);
   if (!link || !label || !actionType || !actionTarget) {
@@ -949,6 +990,7 @@ function renderStartHere() {
   } catch (_) {}
   startHereLatestReleaseId = latestMain && latestMain.id ? latestMain.id : '';
   if (previewMode === 'new' || (!previewMode && !seenBefore)) {
+    wrap.style.display = '';
     if (kicker) kicker.textContent = 'New here?';
     if (label) label.textContent = 'Start with';
     setStartHereLink('startHereLink1', 'Best intro', 'article', targets.intro && targets.intro.id);
@@ -957,9 +999,26 @@ function renderStartHere() {
     try { localStorage.setItem(START_HERE_SEEN_KEY, '1'); } catch (_) {}
     return;
   }
+  if (startHereAnnouncement && startHereAnnouncement.message) {
+    wrap.style.display = '';
+    if (kicker) kicker.textContent = 'Update';
+    if (label) label.textContent = startHereAnnouncement.message;
+    setStartHereLink('startHereLink1', startHereAnnouncement.linkText || 'Read update', 'url', startHereAnnouncement.linkTarget || '/');
+    setStartHereLink('startHereLink2', null, null, null);
+    setStartHereLink('startHereLink3', null, null, null);
+    return;
+  }
   if (kicker) kicker.textContent = 'Welcome back';
   var hasNewRelease = previewMode === 'updated' ? true : (previewMode === 'uptodate' ? false : !!(latestMain && latestMain.id && latestMain.id !== lastSeenPostId));
-  if (label) label.textContent = hasNewRelease ? 'New this week' : "You're up to date";
+  if (!hasNewRelease && previewMode !== 'uptodate') {
+    wrap.style.display = 'none';
+    setStartHereLink('startHereLink1', null, null, null);
+    setStartHereLink('startHereLink2', null, null, null);
+    setStartHereLink('startHereLink3', null, null, null);
+    return;
+  }
+  wrap.style.display = '';
+  if (label) label.textContent = hasNewRelease ? 'New article is live' : "You're up to date";
   setStartHereLink('startHereLink1', 'Latest article', 'article', latestMain && latestMain.id);
   setStartHereLink('startHereLink2', 'Latest Value Watch', 'article', latestValueWatch && latestValueWatch.id);
   setStartHereLink('startHereLink3', null, null, null);
@@ -984,6 +1043,13 @@ function openStartHereAction(linkId) {
     if (startHereLatestReleaseId) {
       try { localStorage.setItem(START_HERE_LAST_SEEN_POST_KEY, startHereLatestReleaseId); } catch (_) {}
     }
+    return;
+  }
+  if (type === 'url') {
+    if (startHereLatestReleaseId) {
+      try { localStorage.setItem(START_HERE_LAST_SEEN_POST_KEY, startHereLatestReleaseId); } catch (_) {}
+    }
+    window.location.href = target;
   }
 }
 
@@ -2082,7 +2148,7 @@ function deleteTopCard(id) {
 
 // Init - load posts and handle URL routing on startup
 loadTopCardsTicker();
-loadPostsFromDB().then(function() {
+Promise.all([loadPostsFromDB(), loadStartHereAnnouncement()]).then(function() {
   var path = window.location.pathname;
   if (path.startsWith('/article/')) {
     var slug = path.replace('/article/', '');

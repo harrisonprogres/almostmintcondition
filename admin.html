@@ -486,8 +486,9 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
           <div style="display:flex;gap:10px;margin-bottom:20px;">
             <button class="pm-btn" id="page-tab-about" onclick="switchPageTab('about')" style="background:var(--ink);color:#F7F4EE;border-color:var(--ink);">About</button>
             <button class="pm-btn" id="page-tab-contact" onclick="switchPageTab('contact')">Contact</button>
+            <button class="pm-btn" id="page-tab-home_update_bar" onclick="switchPageTab('home_update_bar')">Home Update Bar</button>
           </div>
-          <div style="margin-bottom:10px;font-size:11px;color:var(--muted);">Use ## for headings, **bold** for bold text. Each line becomes a paragraph.</div>
+          <div id="pageEditorHelp" style="margin-bottom:10px;font-size:11px;color:var(--muted);">Use ## for headings, **bold** for bold text. Each line becomes a paragraph.</div>
           <textarea id="pageEditorBody" style="width:100%;min-height:340px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;line-height:1.8;padding:14px;resize:vertical;outline:none;"></textarea>
           <div style="margin-top:12px;display:flex;gap:8px;">
             <button class="btn-pub" onclick="savePage()">Save Page &rarr;</button>
@@ -1502,6 +1503,14 @@ var currentPageTab = 'about';
 function switchPageTab(id) {
   currentPageTab = id;
   document.getElementById('currentPageId').value = id;
+  var help = document.getElementById('pageEditorHelp');
+  if (help) {
+    if (id === 'home_update_bar') {
+      help.innerHTML = 'Configure optional homepage announcement override.<br>Format:<br><code>message: Your update text</code><br><code>link_text: Read update</code><br><code>link_target: /all-articles</code><br>Leave blank to disable manual override and use automatic smart behavior.';
+    } else {
+      help.textContent = 'Use ## for headings, **bold** for bold text. Each line becomes a paragraph.';
+    }
+  }
   document.querySelectorAll('[id^="page-tab-"]').forEach(function(b) {
     b.style.background = ''; b.style.color = ''; b.style.borderColor = '';
   });
