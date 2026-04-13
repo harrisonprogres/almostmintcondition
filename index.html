@@ -110,6 +110,12 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .uv-home-excerpt{font-size:13px;color:var(--muted);line-height:1.55;max-width:560px;}
 .uv-home-cta{align-self:center;font-size:13px;font-weight:700;color:var(--red);text-decoration:none;white-space:nowrap;border:1px solid var(--red);padding:10px 18px;border-radius:8px;transition:background .15s,color .15s;}
 .uv-home-cta:hover{background:var(--red);color:#fff;}
+.all-articles-home-wrap{max-width:1140px;margin:16px auto 0;padding:0 28px 20px;display:none;}
+.all-articles-home-wrap.archive-visible{display:block;}
+.archive-controls{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 20px;}
+.archive-chip{background:#f3efe8;border:1px solid var(--border);border-radius:999px;padding:7px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;}
+.archive-chip:hover{border-color:#d9d1c5;color:var(--ink);}
+.archive-chip.active{background:#fff;border-color:var(--red);color:var(--red);font-weight:700;}
 .uv-archive-note{font-size:13px;color:var(--muted);line-height:1.65;max-width:720px;margin:0 28px 24px;}
 .loading-state{text-align:center;padding:60px 20px;color:var(--muted);}
 .loading-state .spin{font-size:32px;display:inline-block;animation:spin 1s linear infinite;}
@@ -319,19 +325,21 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
   </div>
   <div class="nav-links">
     <a id="nav-home" class="active" onclick="showPage('home')">Home</a>
+    <a id="nav-articles" onclick="showPage('articles')">All Articles</a>
+    <a id="nav-undervalued" onclick="showPage('undervalued')">Undervalued Picks</a>
     <a id="nav-about" onclick="showPage('about')">About</a>
     <a id="nav-favorites" onclick="showPage('favorites')">Favorites</a>
     <a id="nav-contact" onclick="showPage('contact')">Contact</a>
-    <a id="nav-undervalued" onclick="showPage('undervalued')">Undervalued picks</a>
   </div>
   <button class="mobile-menu-btn" onclick="toggleMobileMenu()">Menu</button>
 </div>
 <div id="mobileMenu" class="mobile-menu">
   <a id="mnav-home" class="active" onclick="showPage('home')">Home</a>
+  <a id="mnav-articles" onclick="showPage('articles')">All Articles</a>
+  <a id="mnav-undervalued" onclick="showPage('undervalued')">Undervalued Picks</a>
   <a id="mnav-about" onclick="showPage('about')">About</a>
   <a id="mnav-favorites" onclick="showPage('favorites')">Favorites</a>
   <a id="mnav-contact" onclick="showPage('contact')">Contact</a>
-  <a id="mnav-undervalued" onclick="showPage('undervalued')">Undervalued picks</a>
 </div>
 
 <div id="page-home" class="page active">
@@ -377,6 +385,18 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
     <div class="sec-label">Latest Posts</div>
     <div class="posts-filter-status" id="postsFilterStatus">Showing: <strong>All Posts</strong></div>
     <div class="posts-grid" id="postsGrid"><div class="loading-state"><span class="spin">&#9685;</span><p style="margin-top:12px;font-size:13px;">Loading posts...</p></div></div>
+  </div>
+  <div class="all-articles-home-wrap" id="allArticlesHomeWrap" aria-live="polite">
+    <div class="sec-label">Article archive</div>
+    <div class="uv-home-card" id="allArticlesHomeCard" style="display:none;">
+      <div class="uv-home-thumb" id="allArticlesHomeThumb" aria-hidden="true"><span>&#128196;</span></div>
+      <div class="uv-home-body">
+        <div class="uv-home-kicker">Complete database</div>
+        <div class="uv-home-title">Browse every AMC article</div>
+        <div class="uv-home-excerpt" id="allArticlesHomeExcerpt"></div>
+      </div>
+      <a class="uv-home-cta" href="/all-articles" onclick="event.preventDefault(); showPage('articles');">All articles &rarr;</a>
+    </div>
   </div>
   <div class="email-footer">
     <div class="email-footer-kicker">Stay in the loop</div>
@@ -487,6 +507,32 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
   </div>
 </div>
 
+<div id="page-articles" class="page">
+  <header class="static-hero" aria-label="All articles">
+    <div class="static-hero-bg">AMC</div>
+    <div class="static-hero-inner">
+      <p class="static-hero-kicker">Archive</p>
+      <h1 class="static-hero-title">All <em>Articles.</em></h1>
+      <p class="static-hero-desc">Every published post in one place, newest to oldest.</p>
+    </div>
+  </header>
+  <div class="static-page-content">
+    <div class="posts-section" style="padding-top:0;">
+      <div class="archive-controls" id="allArticlesFilters">
+        <button class="archive-chip active" onclick="filterAllArticles('all', this)">All</button>
+        <button class="archive-chip" onclick="filterAllArticles('market', this)">Market</button>
+        <button class="archive-chip" onclick="filterAllArticles('grading', this)">Grading</button>
+        <button class="archive-chip" onclick="filterAllArticles('news', this)">News</button>
+        <button class="archive-chip" onclick="filterAllArticles('community', this)">Community</button>
+        <button class="archive-chip" onclick="filterAllArticles('guide', this)">Guides</button>
+        <button class="archive-chip" onclick="filterAllArticles('collection', this)">Collection</button>
+        <button class="archive-chip" onclick="filterAllArticles('underrated', this)">Undervalued</button>
+      </div>
+      <div class="posts-grid" id="allArticlesGrid"><div class="loading-state"><span class="spin">&#9685;</span><p style="margin-top:12px;font-size:13px;">Loading archive...</p></div></div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -495,6 +541,7 @@ var DRAFTS_KEY = 'amc_drafts_v1';
 var isLoggedIn = false;
 var posts = [];
 var drafts = loadDrafts();
+var allArticlesFilter = 'all';
 
 function apiFetch(path, options) {
   var opts = options || {};
@@ -725,6 +772,9 @@ function showPage(n) {
   if (n === 'undervalued') {
     loadPostsFromDB().then(function() { renderUndervaluedArchive(); });
   }
+  if (n === 'articles') {
+    loadPostsFromDB().then(function() { renderAllArticlesArchive(); });
+  }
   window.scrollTo(0, 0);
 }
 function showDash() {
@@ -774,6 +824,11 @@ function isUndervaluedSeriesPost(p) {
   return c === 'underrated' || t === 'underrated';
 }
 
+function isValueWatchPost(p) {
+  var title = (p && p.title ? p.title : '').toLowerCase();
+  return title.indexOf('value watch') >= 0;
+}
+
 function getPublishedMain() {
   return posts.filter(function(p) { return p.status === 'published' && !isUndervaluedSeriesPost(p); });
 }
@@ -782,7 +837,7 @@ function getPublishedUndervalued() {
   return posts.filter(function(p) { return p.status === 'published' && isUndervaluedSeriesPost(p); });
 }
 
-function renderHome(cat) { renderFeatured(); renderUndervaluedHomeStrip(); renderPosts(cat); }
+function renderHome(cat) { renderFeatured(); renderUndervaluedHomeStrip(); renderPosts(cat); renderAllArticlesHomeStrip(); }
 
 function renderUndervaluedHomeStrip() {
   var wrap = document.getElementById('undervaluedHomeWrap');
@@ -797,6 +852,7 @@ function renderUndervaluedHomeStrip() {
   wrap.classList.add('uv-visible');
   card.style.display = 'flex';
   var latest = uv[0];
+  document.querySelector('#undervaluedHomeCard .uv-home-kicker').textContent = isValueWatchPost(latest) ? ('AMC Value Watch • Updated ' + (latest.date || 'this week')) : 'Latest week';
   document.getElementById('undervaluedHomeTitle').textContent = latest.title;
   document.getElementById('undervaluedHomeExcerpt').textContent = latest.excerpt || '';
   var th = document.getElementById('undervaluedHomeThumb');
@@ -829,6 +885,70 @@ function renderUndervaluedArchive() {
     var c = e.target.closest('[data-id]');
     if (c) openArticle(c.dataset.id);
   };
+}
+
+function getPublishedChronological() {
+  return posts
+    .filter(function(p) { return p.status === 'published'; })
+    .slice()
+    .sort(function(a, b) {
+      var ad = Date.parse(a.date || '');
+      var bd = Date.parse(b.date || '');
+      if (isNaN(ad) || isNaN(bd)) return 0;
+      return bd - ad;
+    });
+}
+
+function renderAllArticlesHomeStrip() {
+  var wrap = document.getElementById('allArticlesHomeWrap');
+  var card = document.getElementById('allArticlesHomeCard');
+  var excerpt = document.getElementById('allArticlesHomeExcerpt');
+  if (!wrap || !card || !excerpt) return;
+  var published = getPublishedChronological();
+  if (published.length === 0) {
+    wrap.classList.remove('archive-visible');
+    card.style.display = 'none';
+    return;
+  }
+  wrap.classList.add('archive-visible');
+  card.style.display = 'flex';
+  excerpt.textContent = 'Explore the full AMC archive, ordered newest to oldest.';
+}
+
+function renderAllArticlesArchive() {
+  var g = document.getElementById('allArticlesGrid');
+  if (!g) return;
+  var allPosts = getPublishedChronological();
+  if (allArticlesFilter !== 'all') {
+    allPosts = allPosts.filter(function(p) {
+      if (allArticlesFilter === 'underrated') return isUndervaluedSeriesPost(p);
+      return postMatchesNavCategory(p, allArticlesFilter);
+    });
+  }
+  if (allPosts.length === 0) {
+    g.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><h3>No articles yet</h3><p>Publish your first article to build the archive.</p></div>';
+    return;
+  }
+  var html = '';
+  allPosts.forEach(function(p) {
+    var thumbContent = p.headerImg
+      ? '<img src="' + p.headerImg + '" style="width:100%;height:100%;object-fit:cover;">'
+      : (p.emoji || '&#128196;');
+    html += '<div class="post-card" data-id="' + p.id + '"><div class="post-thumb">' + thumbContent + '</div><div class="post-card-body"><div class="post-pill">' + p.tag + '</div><div class="post-title">' + p.title + '</div><div class="post-excerpt">' + (p.excerpt || '') + '</div><div class="post-meta"><span>' + p.author + '</span><span>&middot;</span><span>' + p.date + '</span><span>&middot;</span><span>' + p.read + '</span></div></div></div>';
+  });
+  g.innerHTML = html;
+  g.onclick = function(e) {
+    var c = e.target.closest('[data-id]');
+    if (c) openArticle(c.dataset.id);
+  };
+}
+
+function filterAllArticles(cat, btn) {
+  allArticlesFilter = cat;
+  var scope = document.getElementById('allArticlesFilters');
+  if (scope) scope.querySelectorAll('.archive-chip').forEach(function(chip) { chip.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderAllArticlesArchive();
 }
 
 function renderFeatured() {
@@ -1404,8 +1524,8 @@ showPage = function(n) {
     _showPage(n);
     return;
   }
-  var titles = { home: 'Almost Mint Condition', about: 'About — Almost Mint Condition', favorites: "AMC's Favorite Cards — Almost Mint Condition", contact: 'Contact — Almost Mint Condition', undervalued: 'Undervalued picks — Almost Mint Condition' };
-  var paths = { home: '/', about: '/about', favorites: '/favorites', contact: '/contact', undervalued: '/undervalued-picks' };
+  var titles = { home: 'Almost Mint Condition', about: 'About — Almost Mint Condition', favorites: "AMC's Favorite Cards — Almost Mint Condition", contact: 'Contact — Almost Mint Condition', undervalued: 'Undervalued picks — Almost Mint Condition', articles: 'All articles — Almost Mint Condition' };
+  var paths = { home: '/', about: '/about', favorites: '/favorites', contact: '/contact', undervalued: '/undervalued-picks', articles: '/all-articles' };
   history.pushState({ page: n }, titles[n] || n, paths[n] || '/');
   updateMeta(titles[n] || null, null);
   _showPage(n);
@@ -1428,6 +1548,9 @@ window.addEventListener('popstate', function(e) {
     loadPage('contact', 'contact-body');
   } else if (path === '/undervalued-picks') {
     _showPage('undervalued');
+  } else if (path === '/all-articles') {
+    _showPage('articles');
+    renderAllArticlesArchive();
   } else if (path.startsWith('/article/')) {
     var slug = path.replace('/article/', '');
     var post = findPostBySlug(slug);
@@ -1779,6 +1902,10 @@ loadPostsFromDB().then(function() {
   } else if (path === '/undervalued-picks') {
     updateMeta('Undervalued picks — Almost Mint Condition', 'Weekly undervalued card picks — archived by week.');
     _showPage('undervalued');
+  } else if (path === '/all-articles') {
+    updateMeta('All articles — Almost Mint Condition', 'Every published AMC article in chronological order.');
+    _showPage('articles');
+    renderAllArticlesArchive();
   } else {
     renderHome('all');
   }

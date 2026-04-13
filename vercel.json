@@ -16,6 +16,7 @@
     { "source": "/favorites", "destination": "/index.html" },
     { "source": "/contact", "destination": "/index.html" },
     { "source": "/undervalued-picks", "destination": "/index.html" },
+    { "source": "/all-articles", "destination": "/index.html" },
     { "source": "/article/:slug*", "destination": "/index.html" }
   ]
 }
