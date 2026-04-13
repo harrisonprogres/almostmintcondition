@@ -67,6 +67,14 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .cat-btn{background:none;border:none;border-bottom:2px solid transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);padding:13px 16px;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .cat-btn.active{color:var(--ink);border-bottom-color:var(--red);font-weight:700;}
 .content-area{max-width:1140px;margin:0 auto;padding:42px 28px 0;}
+.start-here{max-width:1140px;margin:0 auto;padding:14px 28px 4px;}
+.start-here-line{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center;background:rgba(255,255,255,.62);border:1px solid #e9e3da;border-radius:10px;padding:10px 12px;}
+.start-here-kicker{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.7px;text-transform:uppercase;color:var(--muted);}
+.start-here-label{font-weight:700;color:var(--red);}
+.start-here-links{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.start-here-link{font-size:12px;font-weight:700;color:var(--ink);text-decoration:none;cursor:pointer;background:#f3efe8;border:1px solid var(--border);border-radius:999px;padding:6px 10px;}
+.start-here-link:hover{border-color:#d2c5b5;color:var(--red);}
+.start-here-sep{display:none;}
 .sec-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:18px;display:flex;align-items:center;gap:10px;}
 .sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
 .feat-grid{display:grid;grid-template-columns:3fr 2fr;gap:20px;margin-bottom:36px;}
@@ -377,6 +385,19 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
     <button class="cat-btn" onclick="filterCat('community',this)">Community</button>
     <button class="cat-btn" onclick="filterCat('guide',this)">Guides</button>
     <button class="cat-btn" onclick="filterCat('collection',this)">Collection</button>
+  </div>
+  <div class="start-here" id="startHereWrap" aria-live="polite">
+    <div class="start-here-line">
+      <span class="start-here-kicker">New here?</span>
+      <span class="start-here-label">Start with</span>
+      <div class="start-here-links">
+        <a class="start-here-link" id="startHereIntro" href="#" onclick="event.preventDefault(); openStartHere('intro');">Best intro</a>
+        <span class="start-here-sep">&middot;</span>
+        <a class="start-here-link" id="startHereValueWatch" href="#" onclick="event.preventDefault(); openStartHere('valuewatch');">Latest Value Watch</a>
+        <span class="start-here-sep">&middot;</span>
+        <a class="start-here-link" id="startHereGrading" href="#" onclick="event.preventDefault(); openStartHere('grading');">Best grading guide</a>
+      </div>
+    </div>
   </div>
   <div class="content-area">
     <div class="sec-label" id="featuredLabel" style="display:none;">Featured</div>
@@ -863,7 +884,46 @@ function getPublishedUndervalued() {
   return posts.filter(function(p) { return p.status === 'published' && isUndervaluedSeriesPost(p); });
 }
 
-function renderHome(cat) { renderFeatured(); renderUndervaluedHomeStrip(); renderPosts(cat); renderAllArticlesHomeStrip(); }
+function renderHome(cat) { renderStartHere(); renderFeatured(); renderUndervaluedHomeStrip(); renderPosts(cat); renderAllArticlesHomeStrip(); }
+
+function findStartHereTargets() {
+  var published = posts.filter(function(p) { return p.status === 'published'; });
+  var intro = published.find(function(p) { return (p.title || '').toLowerCase().indexOf('collecting what you love') >= 0; }) || published[0] || null;
+  var valuewatch = published.find(function(p) { return isValueWatchPost(p); }) || null;
+  var grading = published.find(function(p) {
+    var t = (p.title || '').toLowerCase();
+    var c = (p.category || '').toLowerCase();
+    return c === 'grading' || t.indexOf('psa') >= 0 || t.indexOf('grading') >= 0;
+  }) || null;
+  return { intro: intro, valuewatch: valuewatch, grading: grading };
+}
+
+function renderStartHere() {
+  var wrap = document.getElementById('startHereWrap');
+  if (!wrap) return;
+  var targets = findStartHereTargets();
+  ['intro', 'valuewatch', 'grading'].forEach(function(key) {
+    var link = document.getElementById('startHere' + (key === 'valuewatch' ? 'ValueWatch' : key.charAt(0).toUpperCase() + key.slice(1)));
+    if (!link) return;
+    if (!targets[key]) {
+      link.style.display = 'none';
+      return;
+    }
+    link.style.display = 'inline-flex';
+    link.dataset.postId = targets[key].id;
+  });
+}
+
+function openStartHere(key) {
+  var idMap = {
+    intro: 'startHereIntro',
+    valuewatch: 'startHereValueWatch',
+    grading: 'startHereGrading'
+  };
+  var el = document.getElementById(idMap[key] || '');
+  if (!el || !el.dataset.postId) return;
+  openArticle(el.dataset.postId);
+}
 
 function renderUndervaluedHomeStrip() {
   var wrap = document.getElementById('undervaluedHomeWrap');
