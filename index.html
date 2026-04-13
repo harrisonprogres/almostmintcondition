@@ -388,14 +388,14 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
   </div>
   <div class="start-here" id="startHereWrap" aria-live="polite">
     <div class="start-here-line">
-      <span class="start-here-kicker">New here?</span>
-      <span class="start-here-label">Start with</span>
+      <span class="start-here-kicker" id="startHereKicker">New here?</span>
+      <span class="start-here-label" id="startHereLabel">Start with</span>
       <div class="start-here-links">
-        <a class="start-here-link" id="startHereIntro" href="#" onclick="event.preventDefault(); openStartHere('intro');">Best intro</a>
+        <a class="start-here-link" id="startHereLink1" href="#" onclick="event.preventDefault(); openStartHereAction('link1');">Best intro</a>
         <span class="start-here-sep">&middot;</span>
-        <a class="start-here-link" id="startHereValueWatch" href="#" onclick="event.preventDefault(); openStartHere('valuewatch');">Latest Value Watch</a>
+        <a class="start-here-link" id="startHereLink2" href="#" onclick="event.preventDefault(); openStartHereAction('link2');">Latest Value Watch</a>
         <span class="start-here-sep">&middot;</span>
-        <a class="start-here-link" id="startHereGrading" href="#" onclick="event.preventDefault(); openStartHere('grading');">Best grading guide</a>
+        <a class="start-here-link" id="startHereLink3" href="#" onclick="event.preventDefault(); openStartHereAction('link3');">Best grading guide</a>
       </div>
     </div>
   </div>
@@ -588,6 +588,9 @@ var drafts = loadDrafts();
 var allArticlesFilter = 'all';
 var allArticlesQuery = '';
 var allArticlesSort = 'newest';
+var START_HERE_SEEN_KEY = 'amc_seen_home_v1';
+var START_HERE_LAST_SEEN_POST_KEY = 'amc_last_seen_post_id_v1';
+var startHereLatestReleaseId = '';
 
 function apiFetch(path, options) {
   var opts = options || {};
@@ -898,31 +901,84 @@ function findStartHereTargets() {
   return { intro: intro, valuewatch: valuewatch, grading: grading };
 }
 
+function getLatestPublishedPost() {
+  var sorted = getPublishedChronological();
+  return sorted.length ? sorted[0] : null;
+}
+
+function getStartHerePreviewMode() {
+  try {
+    var params = new URLSearchParams(window.location.search || '');
+    var mode = (params.get('startHerePreview') || '').toLowerCase();
+    if (mode === 'new' || mode === 'returning' || mode === 'updated' || mode === 'uptodate') return mode;
+  } catch (_) {}
+  return '';
+}
+
+function setStartHereLink(id, label, actionType, actionTarget) {
+  var link = document.getElementById(id);
+  if (!link || !label || !actionType || !actionTarget) {
+    if (link) link.style.display = 'none';
+    return;
+  }
+  link.style.display = 'inline-flex';
+  link.textContent = label;
+  link.dataset.actionType = actionType;
+  link.dataset.actionTarget = actionTarget;
+}
+
 function renderStartHere() {
   var wrap = document.getElementById('startHereWrap');
   if (!wrap) return;
   var targets = findStartHereTargets();
-  ['intro', 'valuewatch', 'grading'].forEach(function(key) {
-    var link = document.getElementById('startHere' + (key === 'valuewatch' ? 'ValueWatch' : key.charAt(0).toUpperCase() + key.slice(1)));
-    if (!link) return;
-    if (!targets[key]) {
-      link.style.display = 'none';
-      return;
-    }
-    link.style.display = 'inline-flex';
-    link.dataset.postId = targets[key].id;
-  });
+  var latest = getLatestPublishedPost();
+  var kicker = document.getElementById('startHereKicker');
+  var label = document.getElementById('startHereLabel');
+  var previewMode = getStartHerePreviewMode();
+  var seenBefore = false;
+  var lastSeenPostId = '';
+  try {
+    seenBefore = localStorage.getItem(START_HERE_SEEN_KEY) === '1';
+    lastSeenPostId = localStorage.getItem(START_HERE_LAST_SEEN_POST_KEY) || '';
+  } catch (_) {}
+  startHereLatestReleaseId = latest && latest.id ? latest.id : '';
+  if (previewMode === 'new' || (!previewMode && !seenBefore)) {
+    if (kicker) kicker.textContent = 'New here?';
+    if (label) label.textContent = 'Start with';
+    setStartHereLink('startHereLink1', 'Best intro', 'article', targets.intro && targets.intro.id);
+    setStartHereLink('startHereLink2', 'Latest Value Watch', 'article', targets.valuewatch && targets.valuewatch.id);
+    setStartHereLink('startHereLink3', 'Best grading guide', 'article', targets.grading && targets.grading.id);
+    try { localStorage.setItem(START_HERE_SEEN_KEY, '1'); } catch (_) {}
+    return;
+  }
+  if (kicker) kicker.textContent = 'Welcome back';
+  var hasNewRelease = previewMode === 'updated' ? true : (previewMode === 'uptodate' ? false : !!(latest && latest.id && latest.id !== lastSeenPostId));
+  if (label) label.textContent = hasNewRelease ? 'New this week' : "You're up to date";
+  setStartHereLink('startHereLink1', hasNewRelease ? 'Latest article' : 'All Articles', hasNewRelease ? 'article' : 'page', hasNewRelease ? latest.id : 'articles');
+  setStartHereLink('startHereLink2', 'Latest Value Watch', 'article', targets.valuewatch && targets.valuewatch.id);
+  setStartHereLink('startHereLink3', 'View archive', 'page', 'articles');
 }
 
-function openStartHere(key) {
-  var idMap = {
-    intro: 'startHereIntro',
-    valuewatch: 'startHereValueWatch',
-    grading: 'startHereGrading'
-  };
-  var el = document.getElementById(idMap[key] || '');
-  if (!el || !el.dataset.postId) return;
-  openArticle(el.dataset.postId);
+function openStartHereAction(linkId) {
+  var idMap = { link1: 'startHereLink1', link2: 'startHereLink2', link3: 'startHereLink3' };
+  var el = document.getElementById(idMap[linkId] || '');
+  if (!el) return;
+  var type = el.dataset.actionType;
+  var target = el.dataset.actionTarget;
+  if (!type || !target) return;
+  if (type === 'article') {
+    openArticle(target);
+    if (startHereLatestReleaseId && target === startHereLatestReleaseId) {
+      try { localStorage.setItem(START_HERE_LAST_SEEN_POST_KEY, startHereLatestReleaseId); } catch (_) {}
+    }
+    return;
+  }
+  if (type === 'page' && target === 'articles') {
+    showPage('articles');
+    if (startHereLatestReleaseId) {
+      try { localStorage.setItem(START_HERE_LAST_SEEN_POST_KEY, startHereLatestReleaseId); } catch (_) {}
+    }
+  }
 }
 
 function renderUndervaluedHomeStrip() {
