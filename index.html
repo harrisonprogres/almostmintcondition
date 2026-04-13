@@ -926,7 +926,11 @@ function parseStartHereAnnouncement(raw) {
   var text = String(raw || '').trim();
   if (!text) return null;
   var lines = text.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
-  var data = { message: '', linkText: '', linkTarget: '' };
+  var data = {
+    message: '', linkText: '', linkTarget: '',
+    introPostId: '', valuewatchPostId: '', gradingPostId: '',
+    latestArticlePostId: '', latestValueWatchPostId: ''
+  };
   lines.forEach(function(line) {
     var idx = line.indexOf(':');
     if (idx <= 0) return;
@@ -936,6 +940,11 @@ function parseStartHereAnnouncement(raw) {
     if (key === 'message') data.message = val;
     if (key === 'link_text') data.linkText = val;
     if (key === 'link_target') data.linkTarget = val;
+    if (key === 'intro_post_id') data.introPostId = val;
+    if (key === 'valuewatch_post_id') data.valuewatchPostId = val;
+    if (key === 'grading_post_id') data.gradingPostId = val;
+    if (key === 'latest_article_post_id') data.latestArticlePostId = val;
+    if (key === 'latest_valuewatch_post_id') data.latestValueWatchPostId = val;
   });
   if (!data.message) data.message = text;
   return data;
@@ -979,6 +988,21 @@ function renderStartHere() {
   var targets = findStartHereTargets();
   var latestMain = getLatestMainPost();
   var latestValueWatch = targets.valuewatch || null;
+  if (startHereAnnouncement && startHereAnnouncement.introPostId) {
+    targets.intro = posts.find(function(p) { return p.id === startHereAnnouncement.introPostId; }) || targets.intro;
+  }
+  if (startHereAnnouncement && startHereAnnouncement.valuewatchPostId) {
+    latestValueWatch = posts.find(function(p) { return p.id === startHereAnnouncement.valuewatchPostId; }) || latestValueWatch;
+  }
+  if (startHereAnnouncement && startHereAnnouncement.gradingPostId) {
+    targets.grading = posts.find(function(p) { return p.id === startHereAnnouncement.gradingPostId; }) || targets.grading;
+  }
+  if (startHereAnnouncement && startHereAnnouncement.latestArticlePostId) {
+    latestMain = posts.find(function(p) { return p.id === startHereAnnouncement.latestArticlePostId; }) || latestMain;
+  }
+  if (startHereAnnouncement && startHereAnnouncement.latestValueWatchPostId) {
+    latestValueWatch = posts.find(function(p) { return p.id === startHereAnnouncement.latestValueWatchPostId; }) || latestValueWatch;
+  }
   var kicker = document.getElementById('startHereKicker');
   var label = document.getElementById('startHereLabel');
   var previewMode = getStartHerePreviewMode();

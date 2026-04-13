@@ -490,6 +490,16 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
           </div>
           <div id="pageEditorHelp" style="margin-bottom:10px;font-size:11px;color:var(--muted);">Use ## for headings, **bold** for bold text. Each line becomes a paragraph.</div>
           <textarea id="pageEditorBody" style="width:100%;min-height:340px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;line-height:1.8;padding:14px;resize:vertical;outline:none;"></textarea>
+          <div id="homeUpdateBarControls" style="display:none;margin-top:14px;padding:14px;border:1px solid var(--border);border-radius:6px;background:#faf8f4;">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Optional manual article overrides (leave on Auto to use smart defaults).</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div class="ef"><label>New user: Best intro</label><select id="hubIntroSelect"></select></div>
+              <div class="ef"><label>New user: Latest Value Watch</label><select id="hubValueWatchSelect"></select></div>
+              <div class="ef"><label>New user: Best grading guide</label><select id="hubGradingSelect"></select></div>
+              <div class="ef"><label>Returning: Latest article</label><select id="hubLatestArticleSelect"></select></div>
+              <div class="ef"><label>Returning: Latest Value Watch</label><select id="hubLatestValueWatchSelect"></select></div>
+            </div>
+          </div>
           <div style="margin-top:12px;display:flex;gap:8px;">
             <button class="btn-pub" onclick="savePage()">Save Page &rarr;</button>
           </div>
@@ -1500,15 +1510,99 @@ showPage = function(n) {
 
 // Page editor functions
 var currentPageTab = 'about';
+function parseKeyValueContent(raw) {
+  var out = {};
+  String(raw || '').split('\n').forEach(function(line) {
+    var idx = line.indexOf(':');
+    if (idx <= 0) return;
+    var key = line.slice(0, idx).trim().toLowerCase();
+    var val = line.slice(idx + 1).trim();
+    if (!key || !val) return;
+    out[key] = val;
+  });
+  return out;
+}
+function renderHomeUpdateBarSelect(selectId, selectedId, filterFn) {
+  var sel = document.getElementById(selectId);
+  if (!sel) return;
+  var html = '<option value="">Auto</option>';
+  posts.filter(function(p) { return p.status === 'published' && (!filterFn || filterFn(p)); }).forEach(function(p) {
+    var selected = selectedId && selectedId === p.id ? ' selected' : '';
+    html += '<option value="' + esc(p.id) + '"' + selected + '>' + esc(p.title) + '</option>';
+  });
+  sel.innerHTML = html;
+}
+function renderHomeUpdateBarControlsFromContent(rawContent) {
+  var data = parseKeyValueContent(rawContent);
+  renderHomeUpdateBarSelect('hubIntroSelect', data.intro_post_id, function() { return true; });
+  renderHomeUpdateBarSelect('hubValueWatchSelect', data.valuewatch_post_id, function(p) {
+    return (p.title || '').toLowerCase().indexOf('value watch') >= 0 || (p.category || '').toLowerCase() === 'underrated';
+  });
+  renderHomeUpdateBarSelect('hubGradingSelect', data.grading_post_id, function(p) {
+    var t = (p.title || '').toLowerCase();
+    return (p.category || '').toLowerCase() === 'grading' || t.indexOf('psa') >= 0 || t.indexOf('grading') >= 0;
+  });
+  renderHomeUpdateBarSelect('hubLatestArticleSelect', data.latest_article_post_id, function(p) {
+    return (p.category || '').toLowerCase() !== 'underrated' && (p.tag || '').toLowerCase() !== 'underrated';
+  });
+  renderHomeUpdateBarSelect('hubLatestValueWatchSelect', data.latest_valuewatch_post_id, function(p) {
+    return (p.title || '').toLowerCase().indexOf('value watch') >= 0 || (p.category || '').toLowerCase() === 'underrated';
+  });
+}
+function stripHomeUpdateBarOverrides(rawContent) {
+  var managed = {
+    intro_post_id: true,
+    valuewatch_post_id: true,
+    grading_post_id: true,
+    latest_article_post_id: true,
+    latest_valuewatch_post_id: true
+  };
+  return String(rawContent || '').split('\n').filter(function(line) {
+    var idx = line.indexOf(':');
+    if (idx <= 0) return true;
+    var key = line.slice(0, idx).trim().toLowerCase();
+    return !managed[key];
+  }).join('\n').trim();
+}
+function appendHomeUpdateBarOverrides(baseBody) {
+  var managed = {
+    intro_post_id: true,
+    valuewatch_post_id: true,
+    grading_post_id: true,
+    latest_article_post_id: true,
+    latest_valuewatch_post_id: true
+  };
+  var pairs = [
+    ['intro_post_id', document.getElementById('hubIntroSelect') && document.getElementById('hubIntroSelect').value],
+    ['valuewatch_post_id', document.getElementById('hubValueWatchSelect') && document.getElementById('hubValueWatchSelect').value],
+    ['grading_post_id', document.getElementById('hubGradingSelect') && document.getElementById('hubGradingSelect').value],
+    ['latest_article_post_id', document.getElementById('hubLatestArticleSelect') && document.getElementById('hubLatestArticleSelect').value],
+    ['latest_valuewatch_post_id', document.getElementById('hubLatestValueWatchSelect') && document.getElementById('hubLatestValueWatchSelect').value]
+  ];
+  var cleaned = String(baseBody || '').split('\n').filter(function(line) {
+    var idx = line.indexOf(':');
+    if (idx <= 0) return true;
+    var key = line.slice(0, idx).trim().toLowerCase();
+    return !managed[key];
+  }).join('\n').trim();
+  var lines = [];
+  pairs.forEach(function(p) { if (p[1]) lines.push(p[0] + ': ' + p[1]); });
+  var body = cleaned;
+  if (!lines.length) return body;
+  return (body ? body + '\n' : '') + lines.join('\n');
+}
 function switchPageTab(id) {
   currentPageTab = id;
   document.getElementById('currentPageId').value = id;
   var help = document.getElementById('pageEditorHelp');
+  var controls = document.getElementById('homeUpdateBarControls');
   if (help) {
     if (id === 'home_update_bar') {
       help.innerHTML = 'Configure optional homepage announcement override.<br>Format:<br><code>message: Your update text</code><br><code>link_text: Read update</code><br><code>link_target: /all-articles</code><br>Leave blank to disable manual override and use automatic smart behavior.';
+      if (controls) controls.style.display = '';
     } else {
       help.textContent = 'Use ## for headings, **bold** for bold text. Each line becomes a paragraph.';
+      if (controls) controls.style.display = 'none';
     }
   }
   document.querySelectorAll('[id^="page-tab-"]').forEach(function(b) {
@@ -1519,7 +1613,13 @@ function switchPageTab(id) {
   apiFetch('/api/pages?id=' + encodeURIComponent(id))
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      document.getElementById('pageEditorBody').value = (data && data[0]) ? data[0].content : '';
+      var content = (data && data[0]) ? data[0].content : '';
+      if (id === 'home_update_bar') {
+        document.getElementById('pageEditorBody').value = stripHomeUpdateBarOverrides(content);
+        renderHomeUpdateBarControlsFromContent(content);
+      } else {
+        document.getElementById('pageEditorBody').value = content;
+      }
     });
 }
 
@@ -1530,6 +1630,7 @@ function showDS_pages() {
 function savePage() {
   var id = document.getElementById('currentPageId').value;
   var body = document.getElementById('pageEditorBody').value;
+  if (id === 'home_update_bar') body = appendHomeUpdateBarOverrides(body);
   apiFetch('/api/admin/pages?id=' + encodeURIComponent(id), {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
