@@ -491,7 +491,59 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
           <div id="pageEditorHelp" style="margin-bottom:10px;font-size:11px;color:var(--muted);">Use ## for headings, **bold** for bold text. Each line becomes a paragraph.</div>
           <textarea id="pageEditorBody" style="width:100%;min-height:340px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;line-height:1.8;padding:14px;resize:vertical;outline:none;"></textarea>
           <div id="homeUpdateBarControls" style="display:none;margin-top:14px;padding:14px;border:1px solid var(--border);border-radius:6px;background:#faf8f4;">
-            <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Optional manual article overrides (leave on Auto to use smart defaults).</div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px;">Banner under top picks</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.45;">Shows below the moving &ldquo;top picks&rdquo; row on the homepage. Uncheck when you don&rsquo;t need it.</div>
+            <div class="ef" style="margin-bottom:10px;">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;">
+                <input type="checkbox" id="hubAnnouncementEnabled" style="width:auto;">
+                Show this banner
+              </label>
+            </div>
+            <div class="ef" style="margin-bottom:10px;"><label>What should it say?</label><textarea id="hubAnnouncementText" rows="2" placeholder="e.g. New undervalued picks are live — see this week&rsquo;s list." style="width:100%;min-height:52px;padding:10px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:14px;resize:vertical;"></textarea></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+              <div class="ef"><label>Look</label>
+                <select id="hubAnnouncementStyle">
+                  <option value="bar">Simple bar (recommended)</option>
+                  <option value="ticker">Dark scrolling line</option>
+                  <option value="ribbon">Small &ldquo;New&rdquo; badge on Undervalued picks</option>
+                </select>
+              </div>
+              <div class="ef"><label>Button goes to</label>
+                <select id="hubAnnouncementLinkKind" onchange="hubAnnouncementLinkUi()">
+                  <option value="undervalued">Undervalued picks archive</option>
+                  <option value="articles">All articles</option>
+                  <option value="article">Pick an article&hellip;</option>
+                  <option value="home">Homepage</option>
+                  <option value="custom">Custom link</option>
+                </select>
+              </div>
+            </div>
+            <div class="ef" id="hubAnnouncementPostWrap" style="display:none;margin-bottom:10px;"><label>Article</label><select id="hubAnnouncementPostSelect"></select></div>
+            <div class="ef" id="hubAnnouncementCustomWrap" style="display:none;margin-bottom:14px;"><label>URL</label><input id="hubAnnouncementLinkCustom" type="text" placeholder="https://&hellip; or /some-path"></div>
+
+            <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
+              <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px;">Homepage strip (optional)</div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.45;">The slim &ldquo;Update&rdquo; / welcome line above your posts. Leave empty to let the site decide (new visitors, new articles, etc.).</div>
+            </div>
+            <div class="ef" style="margin-bottom:10px;"><label>Strip line (optional)</label><input id="hubStripMessage" type="text" placeholder="Leave blank for automatic behavior"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+              <div class="ef"><label>Button label</label><input id="hubStripButtonLabel" type="text" placeholder="e.g. Read update"></div>
+              <div class="ef"><label>That button goes to</label>
+                <select id="hubStripLinkKind" onchange="hubStripLinkUi()">
+                  <option value="undervalued">Undervalued picks archive</option>
+                  <option value="articles">All articles</option>
+                  <option value="article">Pick an article&hellip;</option>
+                  <option value="home">Homepage</option>
+                  <option value="custom">Custom link</option>
+                </select>
+              </div>
+            </div>
+            <div class="ef" id="hubStripPostWrap" style="display:none;margin-bottom:10px;"><label>Article</label><select id="hubStripPostSelect"></select></div>
+            <div class="ef" id="hubStripCustomWrap" style="display:none;margin-bottom:14px;"><label>URL</label><input id="hubStripLinkCustom" type="text" placeholder="https://&hellip;"></div>
+
+            <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Optional manual article overrides (leave on Auto to use smart defaults).</div>
+            </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
               <div class="ef"><label>New user: Best intro</label><select id="hubIntroSelect"></select></div>
               <div class="ef"><label>New user: Latest Value Watch</label><select id="hubValueWatchSelect"></select></div>
@@ -1261,7 +1313,7 @@ function showToast(msg) {
 
 // Slugify helper
 function slugify(title) {
-  return title.toLowerCase()
+  return String(title == null ? '' : title).toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
     .trim()
     .replace(/\s+/g, '-')
@@ -1527,13 +1579,113 @@ function renderHomeUpdateBarSelect(selectId, selectedId, filterFn) {
   if (!sel) return;
   var html = '<option value="">Auto</option>';
   posts.filter(function(p) { return p.status === 'published' && (!filterFn || filterFn(p)); }).forEach(function(p) {
-    var selected = selectedId && selectedId === p.id ? ' selected' : '';
+    var selected = selectedId != null && String(selectedId) === String(p.id) ? ' selected' : '';
     html += '<option value="' + esc(p.id) + '"' + selected + '>' + esc(p.title) + '</option>';
   });
   sel.innerHTML = html;
 }
+var HUB_MANAGED_KEYS = {
+  intro_post_id: true,
+  valuewatch_post_id: true,
+  grading_post_id: true,
+  latest_article_post_id: true,
+  latest_valuewatch_post_id: true,
+  announcement_show: true,
+  announcement_style: true,
+  announcement_text: true,
+  announcement_link: true,
+  message: true,
+  link_text: true,
+  link_target: true
+};
+function hubArticleIdFromLink(link) {
+  var l = String(link || '').trim();
+  if (l.indexOf('/article/') !== 0) return '';
+  var p = findPostBySlug(l.replace('/article/', ''));
+  return p ? p.id : '';
+}
+function hubFillLinkControls(link, kindId, postSelectId, customId) {
+  var kindSel = document.getElementById(kindId);
+  var postSel = document.getElementById(postSelectId);
+  var cust = document.getElementById(customId);
+  if (!kindSel || !postSel || !cust) return;
+  var l = String(link || '').trim();
+  cust.value = '';
+  if (!l) {
+    kindSel.value = 'undervalued';
+    postSel.value = '';
+    return;
+  }
+  if (l === '/undervalued-picks' || l === '/undervalued') {
+    kindSel.value = 'undervalued';
+    postSel.value = '';
+    return;
+  }
+  if (l === '/all-articles') {
+    kindSel.value = 'articles';
+    postSel.value = '';
+    return;
+  }
+  if (l === '/' || l === '') {
+    kindSel.value = 'home';
+    postSel.value = '';
+    return;
+  }
+  if (l.indexOf('/article/') === 0) {
+    var slug = l.replace('/article/', '');
+    var p = findPostBySlug(slug);
+    kindSel.value = 'article';
+    postSel.value = p ? p.id : '';
+    if (!p) {
+      kindSel.value = 'custom';
+      cust.value = l;
+    }
+    return;
+  }
+  kindSel.value = 'custom';
+  cust.value = l;
+}
+function hubResolveLink(kindId, postSelectId, customId) {
+  var kindEl = document.getElementById(kindId);
+  if (!kindEl) return '/undervalued-picks';
+  var kind = kindEl.value;
+  var postSel = document.getElementById(postSelectId);
+  var cust = document.getElementById(customId);
+  if (kind === 'home') return '/';
+  if (kind === 'undervalued') return '/undervalued-picks';
+  if (kind === 'articles') return '/all-articles';
+  if (kind === 'article' && postSel) {
+    var id = postSel.value;
+    var p = posts.find(function(x) { return x.id === id; });
+    if (p) return '/article/' + slugify(p.title);
+    return '/undervalued-picks';
+  }
+  if (kind === 'custom' && cust) {
+    var c = (cust.value || '').trim();
+    return c || '/undervalued-picks';
+  }
+  return '/undervalued-picks';
+}
+function hubAnnouncementLinkUi() {
+  var kind = document.getElementById('hubAnnouncementLinkKind');
+  var v = kind ? kind.value : '';
+  var pw = document.getElementById('hubAnnouncementPostWrap');
+  var cw = document.getElementById('hubAnnouncementCustomWrap');
+  if (pw) pw.style.display = v === 'article' ? 'block' : 'none';
+  if (cw) cw.style.display = v === 'custom' ? 'block' : 'none';
+}
+function hubStripLinkUi() {
+  var kind = document.getElementById('hubStripLinkKind');
+  var v = kind ? kind.value : '';
+  var pw = document.getElementById('hubStripPostWrap');
+  var cw = document.getElementById('hubStripCustomWrap');
+  if (pw) pw.style.display = v === 'article' ? 'block' : 'none';
+  if (cw) cw.style.display = v === 'custom' ? 'block' : 'none';
+}
 function renderHomeUpdateBarControlsFromContent(rawContent) {
   var data = parseKeyValueContent(rawContent);
+  var annPostId = hubArticleIdFromLink(data.announcement_link);
+  var stripPostId = hubArticleIdFromLink(data.link_target);
   renderHomeUpdateBarSelect('hubIntroSelect', data.intro_post_id, function() { return true; });
   renderHomeUpdateBarSelect('hubValueWatchSelect', data.valuewatch_post_id, function(p) {
     return (p.title || '').toLowerCase().indexOf('value watch') >= 0 || (p.category || '').toLowerCase() === 'underrated';
@@ -1548,30 +1700,37 @@ function renderHomeUpdateBarControlsFromContent(rawContent) {
   renderHomeUpdateBarSelect('hubLatestValueWatchSelect', data.latest_valuewatch_post_id, function(p) {
     return (p.title || '').toLowerCase().indexOf('value watch') >= 0 || (p.category || '').toLowerCase() === 'underrated';
   });
+  renderHomeUpdateBarSelect('hubAnnouncementPostSelect', annPostId, function() { return true; });
+  renderHomeUpdateBarSelect('hubStripPostSelect', stripPostId, function() { return true; });
+
+  var annOn = /^yes|true|1|on$/i.test(String(data.announcement_show || '').trim());
+  var annEl = document.getElementById('hubAnnouncementEnabled');
+  if (annEl) annEl.checked = annOn;
+  var annTextEl = document.getElementById('hubAnnouncementText');
+  if (annTextEl) annTextEl.value = data.announcement_text || '';
+  var st = (data.announcement_style || 'bar').toLowerCase();
+  var stEl = document.getElementById('hubAnnouncementStyle');
+  if (stEl) stEl.value = (st === 'ticker' || st === 'ribbon') ? st : 'bar';
+
+  hubFillLinkControls(data.announcement_link, 'hubAnnouncementLinkKind', 'hubAnnouncementPostSelect', 'hubAnnouncementLinkCustom');
+  var sm = document.getElementById('hubStripMessage');
+  if (sm) sm.value = (data.message || '').replace(/\s+/g, ' ').trim();
+  var sl = document.getElementById('hubStripButtonLabel');
+  if (sl) sl.value = data.link_text || '';
+  hubFillLinkControls(data.link_target, 'hubStripLinkKind', 'hubStripPostSelect', 'hubStripLinkCustom');
+
+  hubAnnouncementLinkUi();
+  hubStripLinkUi();
 }
 function stripHomeUpdateBarOverrides(rawContent) {
-  var managed = {
-    intro_post_id: true,
-    valuewatch_post_id: true,
-    grading_post_id: true,
-    latest_article_post_id: true,
-    latest_valuewatch_post_id: true
-  };
   return String(rawContent || '').split('\n').filter(function(line) {
     var idx = line.indexOf(':');
     if (idx <= 0) return true;
     var key = line.slice(0, idx).trim().toLowerCase();
-    return !managed[key];
+    return !HUB_MANAGED_KEYS[key];
   }).join('\n').trim();
 }
 function appendHomeUpdateBarOverrides(baseBody) {
-  var managed = {
-    intro_post_id: true,
-    valuewatch_post_id: true,
-    grading_post_id: true,
-    latest_article_post_id: true,
-    latest_valuewatch_post_id: true
-  };
   var pairs = [
     ['intro_post_id', document.getElementById('hubIntroSelect') && document.getElementById('hubIntroSelect').value],
     ['valuewatch_post_id', document.getElementById('hubValueWatchSelect') && document.getElementById('hubValueWatchSelect').value],
@@ -1579,11 +1738,27 @@ function appendHomeUpdateBarOverrides(baseBody) {
     ['latest_article_post_id', document.getElementById('hubLatestArticleSelect') && document.getElementById('hubLatestArticleSelect').value],
     ['latest_valuewatch_post_id', document.getElementById('hubLatestValueWatchSelect') && document.getElementById('hubLatestValueWatchSelect').value]
   ];
+  var annEl = document.getElementById('hubAnnouncementEnabled');
+  var annText = (document.getElementById('hubAnnouncementText') && document.getElementById('hubAnnouncementText').value || '').trim().replace(/\n/g, ' ');
+  if (annEl && annEl.checked && annText) {
+    pairs.push(['announcement_show', 'yes']);
+    var styleEl = document.getElementById('hubAnnouncementStyle');
+    pairs.push(['announcement_style', (styleEl && styleEl.value) ? styleEl.value : 'bar']);
+    pairs.push(['announcement_text', annText]);
+    pairs.push(['announcement_link', hubResolveLink('hubAnnouncementLinkKind', 'hubAnnouncementPostSelect', 'hubAnnouncementLinkCustom')]);
+  }
+  var stripMsg = (document.getElementById('hubStripMessage') && document.getElementById('hubStripMessage').value || '').trim().replace(/\n/g, ' ');
+  if (stripMsg) {
+    var btn = (document.getElementById('hubStripButtonLabel') && document.getElementById('hubStripButtonLabel').value || '').trim() || 'Read update';
+    pairs.push(['message', stripMsg]);
+    pairs.push(['link_text', btn]);
+    pairs.push(['link_target', hubResolveLink('hubStripLinkKind', 'hubStripPostSelect', 'hubStripLinkCustom')]);
+  }
   var cleaned = String(baseBody || '').split('\n').filter(function(line) {
     var idx = line.indexOf(':');
     if (idx <= 0) return true;
     var key = line.slice(0, idx).trim().toLowerCase();
-    return !managed[key];
+    return !HUB_MANAGED_KEYS[key];
   }).join('\n').trim();
   var lines = [];
   pairs.forEach(function(p) { if (p[1]) lines.push(p[0] + ': ' + p[1]); });
@@ -1596,13 +1771,16 @@ function switchPageTab(id) {
   document.getElementById('currentPageId').value = id;
   var help = document.getElementById('pageEditorHelp');
   var controls = document.getElementById('homeUpdateBarControls');
+  var ta = document.getElementById('pageEditorBody');
   if (help) {
     if (id === 'home_update_bar') {
-      help.innerHTML = 'Configure optional homepage announcement override.<br>Format:<br><code>message: Your update text</code><br><code>link_text: Read update</code><br><code>link_target: /all-articles</code><br>Leave blank to disable manual override and use automatic smart behavior.';
+      help.innerHTML = 'Fill out the sections below, then click <strong>Save Page</strong>. Open your homepage again (or refresh it) to see the banner.<br><br><strong>Testing on your own computer?</strong> This browser also keeps a copy of what you saved. If the home page still looks empty, save again here, then refresh the home page &mdash; that copy is used on <code>localhost</code> when the database read does not come through.';
       if (controls) controls.style.display = '';
+      if (ta) ta.style.display = 'none';
     } else {
       help.textContent = 'Use ## for headings, **bold** for bold text. Each line becomes a paragraph.';
       if (controls) controls.style.display = 'none';
+      if (ta) ta.style.display = '';
     }
   }
   document.querySelectorAll('[id^="page-tab-"]').forEach(function(b) {
@@ -1617,6 +1795,9 @@ function switchPageTab(id) {
       if (id === 'home_update_bar') {
         document.getElementById('pageEditorBody').value = stripHomeUpdateBarOverrides(content);
         renderHomeUpdateBarControlsFromContent(content);
+        if (content && String(content).trim()) {
+          try { localStorage.setItem('amc_home_update_bar_cache', String(content).trim()); } catch (_) {}
+        }
       } else {
         document.getElementById('pageEditorBody').value = content;
       }
@@ -1636,8 +1817,12 @@ function savePage() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ content: body, updated_at: new Date().toISOString() })
   }).then(function(r) {
-    if (r.ok) showToast('Page saved!');
-    else showToast('Error saving page.');
+    if (r.ok) {
+      if (id === 'home_update_bar') {
+        try { localStorage.setItem('amc_home_update_bar_cache', body); } catch (_) {}
+      }
+      showToast('Page saved!');
+    } else showToast('Error saving page.');
   });
 }
 

@@ -11,9 +11,12 @@ module.exports = async (req, res) => {
     return;
   }
   try {
-    const response = await supabaseFetch(`pages?id=eq.${encodeURIComponent(id)}&select=content`, { method: 'GET' }, false);
+    // Use the database admin key when present (needed if anonymous reads are blocked). Otherwise use the normal public key so local test still runs.
+    const useServiceRole = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const response = await supabaseFetch(`pages?id=eq.${encodeURIComponent(id)}&select=content`, { method: 'GET' }, useServiceRole);
     const text = await response.text();
     res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'no-store, max-age=0');
     res.status(response.status).send(text);
   } catch (_) {
     res.status(500).json({ error: 'Failed to load page' });

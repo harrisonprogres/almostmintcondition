@@ -63,6 +63,45 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .pick-item{font-size:12px;font-weight:600;color:rgba(247,244,238,0.75);white-space:nowrap;}
 .pick-item span{color:var(--red-light);font-family:'JetBrains Mono',monospace;font-size:10px;margin-left:4px;}
 .pick-ticker-placeholder{opacity:0.55;font-weight:500;font-style:italic;}
+.amc-announce-bar{display:none;position:relative;overflow:hidden;padding:0;border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,#2a2420 0%,#3d3631 38%,#25211e 72%,#1c1917 100%);box-shadow:0 10px 24px rgba(0,0,0,.2);}
+.amc-announce-bar::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(208,74,42,.2) 0%,rgba(232,97,61,.08) 35%,transparent 65%);pointer-events:none;}
+.amc-announce-bar::after{content:'';position:absolute;top:0;left:-30%;width:45%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);animation:amcAnnounceShine 6s ease-in-out infinite;pointer-events:none;}
+@keyframes amcAnnounceShine{0%{transform:translateX(0);opacity:0;}12%{opacity:1;}100%{transform:translateX(380%);opacity:0;}}
+@media (prefers-reduced-motion:reduce){.amc-announce-bar::after{animation:none;}}
+.amc-announce-bar-inner{position:relative;z-index:1;max-width:1140px;margin:0 auto;padding:14px 28px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 20px;}
+.amc-announce-bar-main{display:flex;align-items:center;gap:12px 16px;flex:1;min-width:min(100%,220px);background:rgba(247,244,238,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.55);box-shadow:0 2px 14px rgba(28,25,23,.1),inset 0 1px 0 rgba(255,255,255,.6);}
+.amc-announce-bar-badge{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#F7F4EE;background:linear-gradient(135deg,var(--red) 0%,var(--red-light) 100%);padding:5px 10px;border-radius:4px;box-shadow:0 4px 14px rgba(208,74,42,.45);}
+.amc-announce-bar-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.4);animation:amcAnnouncePulse 2s ease-in-out infinite;}
+@keyframes amcAnnouncePulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.75;transform:scale(.92);}}
+@media (prefers-reduced-motion:reduce){.amc-announce-bar-badge::before{animation:none;}}
+.amc-announce-bar-msg{font-size:15px;font-weight:700;color:var(--ink);line-height:1.35;letter-spacing:-.02em;text-shadow:0 1px 0 rgba(255,255,255,.35);}
+.amc-announce-bar-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.amc-announce-bar-cta{font-size:12px;font-weight:700;color:#fff;text-decoration:none;white-space:nowrap;background:linear-gradient(135deg,var(--red) 0%,var(--red-light) 100%);padding:9px 16px;border-radius:8px;box-shadow:0 6px 18px rgba(208,74,42,.4);transition:transform .15s,box-shadow .15s;}
+.amc-announce-bar-cta:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(208,74,42,.5);color:#fff;}
+.amc-announce-bar-x{display:flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(28,25,23,.06);border:1px solid rgba(28,25,23,.1);border-radius:8px;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;transition:background .15s,color .15s,border-color .15s;}
+.amc-announce-bar-x:hover{color:var(--ink);background:rgba(28,25,23,.08);border-color:rgba(28,25,23,.14);}
+@media (max-width:768px){
+.amc-announce-bar-inner{padding:12px 20px;gap:12px;flex-direction:column;align-items:stretch;}
+.amc-announce-bar-main{width:100%;min-width:0;padding:10px 12px;flex-wrap:wrap;}
+.amc-announce-bar-badge{font-size:7px;padding:4px 8px;letter-spacing:1.4px;}
+.amc-announce-bar-msg{font-size:14px;line-height:1.45;min-width:0;overflow-wrap:break-word;word-wrap:break-word;}
+.amc-announce-bar-actions{width:100%;gap:10px;flex-wrap:nowrap;}
+.amc-announce-bar-cta{flex:1;text-align:center;min-height:44px;padding:11px 12px;display:inline-flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+.amc-announce-bar-x{width:44px;height:44px;min-width:44px;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+.amc-announce-ticker{padding:10px 0 10px 20px;gap:12px;align-items:center;}
+.amc-announce-ticker-viewport{min-width:0;}
+.amc-announce-ticker-track span{font-size:11px;padding-right:28px;line-height:1.3;}
+.amc-announce-ticker-cta{padding:0 20px 0 10px;min-height:44px;display:inline-flex;align-items:center;font-size:11px;-webkit-tap-highlight-color:transparent;}
+}
+.amc-announce-ticker{display:none;background:var(--ink);border-bottom:1px solid rgba(255,255,255,.08);padding:8px 0;align-items:center;gap:16px;}
+.amc-announce-ticker-viewport{flex:1;overflow:hidden;min-width:0;}
+.amc-announce-ticker-track{display:flex;width:max-content;animation:amcAnnMarquee 20s linear infinite;}
+.amc-announce-ticker-track span{font-size:12px;font-weight:600;color:rgba(247,244,238,.9);white-space:nowrap;padding-right:40px;}
+@keyframes amcAnnMarquee{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.amc-announce-ticker-cta{flex-shrink:0;font-size:12px;font-weight:700;color:var(--red-light);text-decoration:none;padding:0 28px 0 0;white-space:nowrap;}
+.amc-announce-ticker-cta:hover{text-decoration:underline;}
+.amc-announce-ribbon{display:none;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.2px;text-transform:uppercase;background:var(--red);color:#fff;padding:3px 7px;border-radius:3px;margin-right:8px;font-weight:700;}
+.sec-label .amc-announce-ribbon{flex-shrink:0;}
 .cats{background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;display:flex;overflow-x:auto;position:sticky;top:62px;z-index:85;}
 .cat-btn{background:none;border:none;border-bottom:2px solid transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);padding:13px 16px;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .cat-btn.active{color:var(--ink);border-bottom-color:var(--red);font-weight:700;}
@@ -370,6 +409,24 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
     <div class="hero-title">Almost <em>Mint.</em></div>
   <div class="hero-desc">Market analysis, collector education, and Pokemon card spotlights.</div>
   </div>
+  <div id="amcAnnounceBar" class="amc-announce-bar" style="display:none;" role="region" aria-label="Announcement">
+    <div class="amc-announce-bar-inner">
+      <div class="amc-announce-bar-main">
+        <span class="amc-announce-bar-badge" aria-hidden="true">Update</span>
+        <span class="amc-announce-bar-msg" id="amcAnnounceBarMsg"></span>
+      </div>
+      <div class="amc-announce-bar-actions">
+        <a href="#" class="amc-announce-bar-cta" id="amcAnnounceBarCta" onclick="event.preventDefault(); runSiteAnnouncementAction();">Read picks</a>
+        <button type="button" class="amc-announce-bar-x" onclick="dismissSiteAnnouncementBar()" aria-label="Dismiss announcement">&times;</button>
+      </div>
+    </div>
+  </div>
+  <div id="amcAnnounceTicker" class="amc-announce-ticker" style="display:none;" role="region" aria-label="Announcement ticker">
+    <div class="amc-announce-ticker-viewport">
+      <div class="amc-announce-ticker-track" id="amcAnnounceTickerTrack"></div>
+    </div>
+    <a href="#" class="amc-announce-ticker-cta" id="amcAnnounceTickerCta" onclick="event.preventDefault(); runSiteAnnouncementAction();">Read</a>
+  </div>
   <div class="picks-strip">
     <div class="picks-label">Top 7 of the Week</div>
     <div class="picks-divider"></div>
@@ -404,7 +461,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
     <div class="feat-grid" id="featuredGrid"></div>
   </div>
   <div class="uv-home-wrap" id="undervaluedHomeWrap" aria-live="polite">
-    <div class="sec-label">Undervalued picks</div>
+    <div class="sec-label"><span id="amcAnnounceRibbon" class="amc-announce-ribbon" aria-hidden="true">New</span>Undervalued picks</div>
     <div class="uv-home-card" id="undervaluedHomeCard" style="display:none;">
       <div class="uv-home-thumb" id="undervaluedHomeThumb"></div>
       <div class="uv-home-body">
@@ -593,6 +650,7 @@ var START_HERE_LAST_SEEN_POST_KEY = 'amc_last_seen_post_id_v1';
 var startHereLatestReleaseId = '';
 var startHereAnnouncement = null;
 var startHereAnnouncementLoaded = false;
+var siteAnnouncementLink = '/undervalued-picks';
 
 function apiFetch(path, options) {
   var opts = options || {};
@@ -889,7 +947,16 @@ function getPublishedUndervalued() {
   return posts.filter(function(p) { return p.status === 'published' && isUndervaluedSeriesPost(p); });
 }
 
-function renderHome(cat) { renderStartHere(); renderFeatured(); renderUndervaluedHomeStrip(); renderPosts(cat); renderAllArticlesHomeStrip(); }
+function renderHome(cat) {
+  loadStartHereAnnouncement(true).then(function() {
+    renderStartHere();
+    renderFeatured();
+    renderUndervaluedHomeStrip();
+    renderPosts(cat);
+    renderAllArticlesHomeStrip();
+    renderSiteAnnouncement();
+  });
+}
 
 function findStartHereTargets() {
   var published = posts.filter(function(p) { return p.status === 'published'; });
@@ -929,7 +996,11 @@ function parseStartHereAnnouncement(raw) {
   var data = {
     message: '', linkText: '', linkTarget: '',
     introPostId: '', valuewatchPostId: '', gradingPostId: '',
-    latestArticlePostId: '', latestValueWatchPostId: ''
+    latestArticlePostId: '', latestValueWatchPostId: '',
+    announcementShow: false,
+    announcementStyle: 'bar',
+    announcementText: '',
+    announcementLink: ''
   };
   lines.forEach(function(line) {
     var idx = line.indexOf(':');
@@ -945,29 +1016,198 @@ function parseStartHereAnnouncement(raw) {
     if (key === 'grading_post_id') data.gradingPostId = val;
     if (key === 'latest_article_post_id') data.latestArticlePostId = val;
     if (key === 'latest_valuewatch_post_id') data.latestValueWatchPostId = val;
+    if (key === 'announcement_show') {
+      var v = val.toLowerCase();
+      data.announcementShow = val === '1' || v === 'yes' || v === 'true' || v === 'on';
+    }
+    if (key === 'announcement_style') {
+      var st = val.toLowerCase();
+      if (st === 'bar' || st === 'ticker' || st === 'ribbon') data.announcementStyle = st;
+    }
+    if (key === 'announcement_text') data.announcementText = val;
+    if (key === 'announcement_link') data.announcementLink = val;
   });
-  if (!data.message) data.message = text;
+  if (!data.message && !data.announcementShow && !data.announcementText) data.message = text;
   return data;
 }
 
-function loadStartHereAnnouncement() {
-  if (startHereAnnouncementLoaded) return Promise.resolve(startHereAnnouncement);
-  return apiFetch('/api/pages?id=home_update_bar')
-    .then(function(r) { return r.json(); })
+var AMC_HOME_BAR_CACHE = 'amc_home_update_bar_cache';
+function isLocalTestSite() {
+  try {
+    var h = window.location.hostname;
+    return h === 'localhost' || h === '127.0.0.1' || h === '::1';
+  } catch (_) { return false; }
+}
+function readHomeBarFromBrowserBackup() {
+  if (!isLocalTestSite()) return '';
+  try {
+    var s = localStorage.getItem(AMC_HOME_BAR_CACHE);
+    return s && String(s).trim() ? String(s).trim() : '';
+  } catch (_) { return ''; }
+}
+function loadStartHereAnnouncement(force) {
+  if (!force && startHereAnnouncementLoaded) return Promise.resolve(startHereAnnouncement);
+  function applyRaw(raw) {
+    startHereAnnouncementLoaded = true;
+    startHereAnnouncement = raw ? parseStartHereAnnouncement(raw) : null;
+    return startHereAnnouncement;
+  }
+  return apiFetch('/api/pages?id=home_update_bar&cb=' + Date.now())
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(new Error('announcement fetch')); })
     .then(function(rows) {
-      startHereAnnouncementLoaded = true;
-      if (Array.isArray(rows) && rows[0] && rows[0].content) {
-        startHereAnnouncement = parseStartHereAnnouncement(rows[0].content);
-      } else {
-        startHereAnnouncement = null;
+      var raw = '';
+      if (Array.isArray(rows) && rows[0] && rows[0].content != null && String(rows[0].content).trim() !== '') {
+        raw = String(rows[0].content).trim();
       }
-      return startHereAnnouncement;
+      if (!raw) raw = readHomeBarFromBrowserBackup();
+      return applyRaw(raw);
     })
     .catch(function() {
-      startHereAnnouncementLoaded = true;
-      startHereAnnouncement = null;
-      return null;
+      return applyRaw(readHomeBarFromBrowserBackup());
     });
+}
+
+function getAnnDemoMode() {
+  try {
+    var params = new URLSearchParams(window.location.search || '');
+    var mode = (params.get('annDemo') || '').toLowerCase();
+    if (mode === 'bar' || mode === 'ticker' || mode === 'ribbon' || mode === 'compare') return mode;
+  } catch (_) {}
+  return '';
+}
+
+function announcementDismissFingerprint(cfg) {
+  if (!cfg || !cfg.show) return '';
+  return String(cfg.style || '') + '|' + String(cfg.text || '') + '|' + String(cfg.link || '');
+}
+
+function clearAnnouncementDismissState() {
+  try {
+    sessionStorage.removeItem('amc_announce_bar_dismiss');
+    sessionStorage.removeItem('amc_announce_bar_dismiss_fp');
+  } catch (_) {}
+}
+
+function dismissSiteAnnouncementBar() {
+  try {
+    var fp = window._amcCurrentAnnounceFp || '';
+    if (fp) sessionStorage.setItem('amc_announce_bar_dismiss_fp', fp);
+    sessionStorage.removeItem('amc_announce_bar_dismiss');
+  } catch (_) {}
+  var bar = document.getElementById('amcAnnounceBar');
+  if (bar) bar.style.display = 'none';
+}
+
+function runSiteAnnouncementAction() {
+  var raw = String(siteAnnouncementLink || '/undervalued-picks').trim();
+  if (!raw) {
+    showPage('undervalued');
+    return;
+  }
+  if (/^https?:\/\//i.test(raw) || raw.indexOf('mailto:') === 0) {
+    window.location.href = raw;
+    return;
+  }
+  var path = raw.split('?')[0];
+  if (path.charAt(0) !== '/') path = '/' + path;
+  if (path === '/undervalued-picks' || path === '/undervalued') {
+    showPage('undervalued');
+    return;
+  }
+  if (path.indexOf('/article/') === 0) {
+    var slug = path.replace('/article/', '');
+    var post = findPostBySlug(slug);
+    if (post) openArticle(post.id);
+    else showPage('undervalued');
+    return;
+  }
+  if (path === '/' || path === '') {
+    showPage('home');
+    return;
+  }
+  window.location.href = raw;
+}
+
+function fillAnnouncementTicker(msg) {
+  var track = document.getElementById('amcAnnounceTickerTrack');
+  if (!track) return;
+  var t = String(msg || '').trim() || 'Announcement';
+  var chunk = t + '     ·     ';
+  var line = chunk.repeat(12);
+  track.innerHTML = '';
+  var s1 = document.createElement('span');
+  var s2 = document.createElement('span');
+  s1.textContent = line;
+  s2.textContent = line;
+  track.appendChild(s1);
+  track.appendChild(s2);
+}
+
+function renderSiteAnnouncement() {
+  var bar = document.getElementById('amcAnnounceBar');
+  var ticker = document.getElementById('amcAnnounceTicker');
+  var ribbon = document.getElementById('amcAnnounceRibbon');
+  var barMsg = document.getElementById('amcAnnounceBarMsg');
+  if (!bar || !ticker || !ribbon) return;
+
+  var demo = getAnnDemoMode();
+  var demoText = 'New undervalued picks are live — open this week\'s list.';
+  var cfg = null;
+  if (demo) {
+    cfg = { show: true, style: demo, text: demoText, link: '/undervalued-picks' };
+  } else if (startHereAnnouncement && startHereAnnouncement.announcementShow && String(startHereAnnouncement.announcementText || '').trim()) {
+    var st = String(startHereAnnouncement.announcementStyle || 'bar').toLowerCase();
+    if (st !== 'bar' && st !== 'ticker' && st !== 'ribbon') st = 'bar';
+    cfg = {
+      show: true,
+      style: st,
+      text: String(startHereAnnouncement.announcementText || '').trim(),
+      link: String(startHereAnnouncement.announcementLink || '/undervalued-picks').trim() || '/undervalued-picks'
+    };
+  }
+
+  siteAnnouncementLink = cfg && cfg.link ? cfg.link : '/undervalued-picks';
+
+  var hideAll = function() {
+    bar.style.display = 'none';
+    ticker.style.display = 'none';
+    ribbon.style.display = 'none';
+  };
+
+  if (!cfg || !cfg.show) {
+    hideAll();
+    return;
+  }
+
+  var fp = announcementDismissFingerprint(cfg);
+  window._amcCurrentAnnounceFp = fp;
+  try {
+    sessionStorage.removeItem('amc_announce_bar_dismiss');
+    var params = new URLSearchParams(window.location.search || '');
+    if (params.get('resetBanner') === '1') clearAnnouncementDismissState();
+  } catch (_) {}
+  var dismissedFp = '';
+  try { dismissedFp = sessionStorage.getItem('amc_announce_bar_dismiss_fp') || ''; } catch (_) {}
+  var dismissed = fp !== '' && dismissedFp === fp;
+
+  fillAnnouncementTicker(cfg.text);
+  if (barMsg) barMsg.textContent = cfg.text;
+
+  hideAll();
+
+  if (cfg.style === 'compare') {
+    if (!dismissed) bar.style.display = 'block';
+    ticker.style.display = 'flex';
+    ribbon.style.display = 'inline-block';
+    return;
+  }
+  if (cfg.style === 'bar') {
+    if (!dismissed) bar.style.display = 'block';
+  } else if (cfg.style === 'ticker') {
+    ticker.style.display = 'flex';
+  } else if (cfg.style === 'ribbon') {
+    ribbon.style.display = 'inline-block';
+  }
 }
 
 function setStartHereLink(id, label, actionType, actionTarget) {
@@ -2172,7 +2412,7 @@ function deleteTopCard(id) {
 
 // Init - load posts and handle URL routing on startup
 loadTopCardsTicker();
-Promise.all([loadPostsFromDB(), loadStartHereAnnouncement()]).then(function() {
+loadPostsFromDB().then(function() {
   var path = window.location.pathname;
   if (path.startsWith('/article/')) {
     var slug = path.replace('/article/', '');
