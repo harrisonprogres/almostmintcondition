@@ -14,6 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Almost Mint Condition — Pokemon Card Blog">
 <meta name="twitter:description" content="Market analysis, collector education, and Pokemon card spotlights.">
+<meta name="twitter:site" content="@almostmintcard">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231C1917'/><text x='16' y='23' text-anchor='middle' font-family='Georgia,serif' font-size='18' font-weight='900' fill='%23D04A2A'>A</text><text x='16' y='23' text-anchor='middle' font-family='Georgia,serif' font-size='18' font-weight='900' fill='%23F7F4EE' opacity='0.15'>A</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,800;0,900;1,700;1,900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -147,6 +148,8 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .post-title{font-family:'Fraunces',serif;font-size:16px;font-weight:800;line-height:1.3;color:var(--ink);margin-bottom:7px;}
 .post-excerpt{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:10px;}
 .post-meta{font-size:11px;color:var(--muted);display:flex;gap:6px;align-items:center;}
+.card-anchor{display:block;color:inherit;text-decoration:none;}
+.card-anchor:hover{color:inherit;}
 .uv-home-wrap{max-width:1140px;margin:0 auto;padding:0 28px 32px;display:none;}
 .uv-home-wrap.uv-visible{display:block;}
 .uv-home-card{background:var(--card);border:1px solid #e8e3db;border-radius:10px;padding:20px 22px;display:flex;flex-wrap:wrap;align-items:center;gap:18px;cursor:pointer;transition:transform .18s,box-shadow .18s;}
@@ -406,7 +409,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
   <div class="hero">
     <div class="hero-bg-text">AMC</div>
     <div class="hero-kicker">Pokemon Card Blog &middot; Est. 2026</div>
-    <div class="hero-title">Almost <em>Mint.</em></div>
+    <h1 class="hero-title">Almost <em>Mint.</em></h1>
   <div class="hero-desc">Market analysis, collector education, and Pokemon card spotlights.</div>
   </div>
   <div id="amcAnnounceBar" class="amc-announce-bar" style="display:none;" role="region" aria-label="Announcement">
@@ -1487,19 +1490,24 @@ function renderFeatured() {
   fl.style.display = 'flex';
   var featured = publishedMain[0];
   var sides = publishedMain.slice(1, 4);
+  var featuredSlug = slugify(featured.title);
+  var featuredHref = '/article/' + featuredSlug;
   var thumbImg = featured.headerImg ? '<img src="' + featured.headerImg + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">' : '<div class="feat-thumb-bg">&#128196;</div>';
   var sidesHtml = '';
   sides.forEach(function(p) {
+    var sideSlug = slugify(p.title);
+    var sideHref = '/article/' + sideSlug;
     var sideThumb = p.headerImg ? '<img src="' + p.headerImg + '" style="width:100%;height:80px;object-fit:cover;border-radius:4px 4px 0 0;margin:-16px -18px 10px;width:calc(100% + 36px);">' : '';
-    sidesHtml += '<div class="side-card" data-id="' + p.id + '"><div>' + sideThumb + '<div class="side-pill">' + p.tag + '</div><div class="side-title">' + p.title + '</div></div><div class="side-meta">' + p.date + ' &middot; ' + p.read + '</div></div>';
+    sidesHtml += '<div class="side-card" data-id="' + p.id + '"><a class="card-anchor" href="' + sideHref + '" onclick="event.preventDefault(); openArticle(\'' + p.id + '\')"><div>' + sideThumb + '<div class="side-pill">' + p.tag + '</div><div class="side-title">' + p.title + '</div></div><div class="side-meta">' + p.date + ' &middot; ' + p.read + '</div></a></div>';
   });
   if (sides.length === 0) sidesHtml = '<div class="side-card" style="opacity:0.4;cursor:default;"><div class="side-pill">Coming soon</div><div class="side-title">More posts coming soon...</div></div>';
   fg.innerHTML = '<div class="feat-main" data-id="' + featured.id + '">' +
+    '<a class="card-anchor" href="' + featuredHref + '" onclick="event.preventDefault(); openArticle(\'' + featured.id + '\')">' +
     '<div class="feat-thumb">' + thumbImg +
     '<div class="feat-thumb-overlay"></div>' +
     '<div class="feat-thumb-content"><div class="feat-pill">' + featured.tag + '</div><div class="feat-thumb-title">' + featured.title + '</div></div></div>' +
     '<div class="feat-body"><div class="feat-excerpt">' + featured.excerpt + '</div>' +
-    '<div class="feat-meta"><span>' + featured.author + '</span><div class="meta-dot"></div><span>' + featured.date + '</span><div class="meta-dot"></div><span>' + featured.read + '</span></div></div></div>' +
+    '<div class="feat-meta"><span>' + featured.author + '</span><div class="meta-dot"></div><span>' + featured.date + '</span><div class="meta-dot"></div><span>' + featured.read + '</span></div></div></a></div>' +
     '<div class="side-stack">' + sidesHtml + '</div>';
   fg.onclick = function(e) { var card = e.target.closest('[data-id]'); if (card) openArticle(card.dataset.id); };
 }
@@ -1555,10 +1563,11 @@ function renderPosts(cat) {
   }
   var html = '';
   f.forEach(function(p) {
+    var href = '/article/' + slugify(p.title);
     var thumbContent = p.headerImg
       ? '<img src="' + p.headerImg + '" style="width:100%;height:100%;object-fit:cover;">'
       : (p.emoji || '&#128196;');
-    html += '<div class="post-card" data-id="' + p.id + '"><div class="post-thumb">' + thumbContent + '</div><div class="post-card-body"><div class="post-pill">' + p.tag + '</div><div class="post-title">' + p.title + '</div><div class="post-excerpt">' + p.excerpt + '</div><div class="post-meta"><span>' + p.author + '</span><span>&middot;</span><span>' + p.date + '</span><span>&middot;</span><span>' + p.read + '</span></div></div></div>';
+    html += '<div class="post-card" data-id="' + p.id + '"><a class="card-anchor" href="' + href + '" onclick="event.preventDefault(); openArticle(\'' + p.id + '\')"><div class="post-thumb">' + thumbContent + '</div><div class="post-card-body"><div class="post-pill">' + p.tag + '</div><div class="post-title">' + p.title + '</div><div class="post-excerpt">' + p.excerpt + '</div><div class="post-meta"><span>' + p.author + '</span><span>&middot;</span><span>' + p.date + '</span><span>&middot;</span><span>' + p.read + '</span></div></div></a></div>';
   });
   g.innerHTML = html;
   g.onclick = function(e) { var card = e.target.closest('[data-id]'); if (card) openArticle(card.dataset.id); };
@@ -1977,11 +1986,15 @@ function updateMeta(title, description, imgUrl) {
   upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary' });
   upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: fullTitle });
   upsertMeta('meta[name="twitter:description"]', { name: 'twitter:description', content: fullDesc });
+  upsertMeta('meta[name="twitter:site"]', { name: 'twitter:site', content: '@almostmintcard' });
 
   // Optional image for share previews (only set when we actually have one).
   if (imgUrl) {
     upsertMeta('meta[property="og:image"]', { property: 'og:image', content: imgUrl });
+    upsertMeta('meta[property="og:image:width"]', { property: 'og:image:width', content: '1200' });
+    upsertMeta('meta[property="og:image:height"]', { property: 'og:image:height', content: '630' });
     upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: imgUrl });
+    upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary_large_image' });
   }
 
   // Structured data (JSON-LD): sitewide + (optional) BlogPosting when we have article fields.
@@ -2014,6 +2027,7 @@ function updateMeta(title, description, imgUrl) {
   ];
 
   var isArticle = window.location.pathname.indexOf('/article/') === 0 && title;
+  var articleData = arguments[3] || null;
   if (isArticle) {
     var article = {
       '@context': 'https://schema.org',
@@ -2025,6 +2039,8 @@ function updateMeta(title, description, imgUrl) {
       publisher: { '@type': 'Organization', name: 'Almost Mint Condition' }
     };
     if (imgUrl) article.image = [imgUrl];
+    if (articleData && articleData.date_published) article.datePublished = articleData.date_published;
+    if (articleData && articleData.updated_at) article.dateModified = articleData.updated_at;
     graphs.push(article);
     upsertMeta('meta[property="og:type"]', { property: 'og:type', content: 'article' });
     upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: imgUrl ? 'summary_large_image' : 'summary' });
@@ -2040,7 +2056,7 @@ openArticle = function(id) {
   if (!a) return;
   var slug = slugify(a.title);
   history.pushState({ articleId: id }, a.title, '/article/' + slug);
-  updateMeta(a.title, a.excerpt, a.headerImg || '');
+  updateMeta(a.title, a.excerpt, a.headerImg || '', a);
   _openArticle(id);
   sendGaPageView();
 };
@@ -2417,7 +2433,7 @@ loadPostsFromDB().then(function() {
   if (path.startsWith('/article/')) {
     var slug = path.replace('/article/', '');
     var post = findPostBySlug(slug);
-    if (post) { updateMeta(post.title, post.excerpt, post.headerImg || ''); _openArticle(post.id); }
+    if (post) { updateMeta(post.title, post.excerpt, post.headerImg || '', post); _openArticle(post.id); }
     else renderHome('all');
   } else if (path === '/about') {
     _showPage('about');
