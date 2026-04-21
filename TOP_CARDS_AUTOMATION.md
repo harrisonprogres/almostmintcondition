@@ -49,3 +49,12 @@ alter table public.top_cards alter column product_id drop not null;
 - Admin write: `POST /api/admin/top-cards`
 - Admin delete: `DELETE /api/admin/top-cards?id=...`
 
+## 4) Optional: seed the ticker without the admin UI
+
+Paste and run `supabase/seed_top_cards_movers_example.sql` in the SQL Editor. It upserts ranks 1–7 using the same `id` pattern as the dashboard (`top_rank_1` … `top_rank_7`).  
+**Note:** That file uses example prices from a published market snapshot, not live data—edit or re-run from admin anytime.
+
+## Future (not a priority right now)
+
+**Automate the ticker** — e.g. scheduled job + market data API (TCGplayer or another source) to refresh top movers / prices weekly. Owner preference: **manual admin entry is fine for now**; revisit automation when it becomes worth the setup and ongoing API/maintenance cost.
+
