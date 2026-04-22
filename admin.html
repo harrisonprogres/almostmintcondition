@@ -1293,7 +1293,7 @@ function formatShortDateForValueWatch() {
 
 function buildValueWatchTemplate(cardCount) {
   var sections = [];
-  sections.push('Welcome back to this week\\'s AMC Value Watch. Here are the cards I\\'m watching this week based on current market movement, collector demand, and long-term upside.');
+  sections.push('Welcome back to this week\'s AMC Value Watch. Here are the cards I\'m watching this week based on current market movement, collector demand, and long-term upside.');
   sections.push('');
   for (var i = 1; i <= cardCount; i++) {
     sections.push('## Pick #' + i + ' - [Card Name] - [Set]');
@@ -1302,8 +1302,8 @@ function buildValueWatchTemplate(cardCount) {
     sections.push('Quick blurb: Why this card stands out this week, what the setup looks like, and what risk to keep in mind.');
     sections.push('');
   }
-  sections.push('Thanks for checking out this week\\'s AMC Value Watch. Let me know which cards you\\'re watching this week, and stay almost mint.');
-  return sections.join('\\n');
+  sections.push('Thanks for checking out this week\'s AMC Value Watch. Let me know which cards you\'re watching this week, and stay almost mint.');
+  return sections.join('\n');
 }
 
 function insertValueWatchTemplate() {
