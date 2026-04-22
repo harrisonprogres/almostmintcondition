@@ -686,37 +686,11 @@ function loadPostsFromDB() {
             id: p.id, tag: p.tag, title: normalizePokemonText(p.title), author: normalizePokemonText(p.author),
             date: p.date_published, read: p.read_time, excerpt: normalizePokemonText(p.excerpt),
             category: p.category, emoji: p.emoji, headerImg: p.header_img || '',
-            rawBody: normalizePokemonText(p.raw_body || ''), status: p.status
+            rawBody: normalizePokemonText(p.raw_body), status: p.status
           };
         });
       }
       return posts;
-    });
-}
-
-function fetchPostDetailsFromDB(id) {
-  return apiFetch('/api/posts?amc_post_id=' + encodeURIComponent(id))
-    .then(function(r) { return r.ok ? r.json() : Promise.reject(new Error('post details')); })
-    .then(function(p) {
-      if (!p || !p.id) return null;
-      var normalized = {
-        id: p.id,
-        tag: p.tag,
-        title: normalizePokemonText(p.title),
-        author: normalizePokemonText(p.author),
-        date: p.date_published,
-        read: p.read_time,
-        excerpt: normalizePokemonText(p.excerpt),
-        category: p.category,
-        emoji: p.emoji,
-        headerImg: p.header_img || '',
-        rawBody: normalizePokemonText(p.raw_body || ''),
-        status: p.status
-      };
-      var idx = posts.findIndex(function(x) { return x.id === normalized.id; });
-      if (idx >= 0) posts[idx] = Object.assign({}, posts[idx], normalized);
-      else posts.push(normalized);
-      return normalized;
     });
 }
 
@@ -1202,17 +1176,6 @@ function editPost(id) {
   document.getElementById('pRead').value = normalizeReadTimeLabel(p.read);
   document.getElementById('editingId').value = id;
   if (p.headerImg) setHeaderImg(p.headerImg);
-  if (!p.rawBody || !String(p.rawBody).trim()) {
-    fetchPostDetailsFromDB(id)
-      .then(function(fullPost) {
-        if (!fullPost) return;
-        document.getElementById('pBody').value = fullPost.rawBody || '';
-        if (fullPost.headerImg) setHeaderImg(fullPost.headerImg);
-      })
-      .catch(function() {
-        showToast('Could not load full post body. Try again.');
-      });
-  }
 }
 function editDraft(id) {
   var d = drafts.find(function(x) { return x.id === id; });
