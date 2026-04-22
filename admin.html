@@ -252,6 +252,8 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
 .fmt-bar{display:flex;gap:5px;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:14px;}
 .fmt-btn{background:none;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;}
 .fmt-btn:hover{background:var(--tag-bg);color:var(--ink);}
+.fmt-btn.template{border-color:#d7c7b8;color:var(--red);font-weight:700;}
+.fmt-btn.template:hover{background:#f8f2ea;border-color:#cfb8a5;color:#9f341f;}
 .body-inp{width:100%;min-height:380px;background:none;border:none;color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;line-height:1.8;resize:none;outline:none;}
 .body-inp::placeholder{color:var(--border);}
 .pm-wrap{padding:28px 36px;}
@@ -468,6 +470,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
             <button class="fmt-btn" onclick="ins('> ')">Quote</button>
             <button class="fmt-btn" onclick="ins('\n---\n')">Divider</button>
             <button class="fmt-btn" onclick="openImgModal()">&#128247; Insert Image</button>
+            <button class="fmt-btn template" onclick="insertValueWatchTemplate()">Value Watch Template</button>
           </div>
           <div id="edWrite"><textarea class="body-inp" id="pBody" placeholder="Start writing..."></textarea></div>
           <div id="edPreview" style="display:none;"><div class="art-body" id="prevBody"></div></div>
@@ -1278,6 +1281,63 @@ function ins(before, after) {
   var sel = ta.value.substring(s, e);
   ta.value = ta.value.substring(0, s) + before + sel + after + ta.value.substring(e);
   ta.focus(); ta.selectionStart = ta.selectionEnd = s + before.length + sel.length + after.length;
+}
+
+function formatShortDateForValueWatch() {
+  var d = new Date();
+  var mm = String(d.getMonth() + 1).padStart(2, '0');
+  var dd = String(d.getDate()).padStart(2, '0');
+  var yy = String(d.getFullYear()).slice(-2);
+  return mm + '/' + dd + '/' + yy;
+}
+
+function buildValueWatchTemplate(cardCount) {
+  var sections = [];
+  sections.push('Welcome back to this week\\'s AMC Value Watch. Here are the cards I\\'m watching this week based on current market movement, collector demand, and long-term upside.');
+  sections.push('');
+  for (var i = 1; i <= cardCount; i++) {
+    sections.push('## Pick #' + i + ' - [Card Name] - [Set]');
+    sections.push('[IMG:https://]');
+    sections.push('');
+    sections.push('Quick blurb: Why this card stands out this week, what the setup looks like, and what risk to keep in mind.');
+    sections.push('');
+  }
+  sections.push('Thanks for checking out this week\\'s AMC Value Watch. Let me know which cards you\\'re watching this week, and stay almost mint.');
+  return sections.join('\\n');
+}
+
+function insertValueWatchTemplate() {
+  var ta = document.getElementById('pBody');
+  var existing = ta && ta.value ? ta.value.trim() : '';
+  if (existing && !confirm('Replace current body with a Value Watch template?')) return;
+
+  var countRaw = prompt('How many cards do you want in this Value Watch?', '5');
+  if (countRaw === null) return;
+  var cardCount = parseInt(countRaw, 10);
+  if (!isFinite(cardCount) || cardCount < 1) {
+    showToast('Enter a valid number of cards.');
+    return;
+  }
+  if (cardCount > 30) cardCount = 30;
+
+  var weekLabel = prompt('Week label for title (MM/DD/YY)', formatShortDateForValueWatch());
+  if (weekLabel === null) return;
+  weekLabel = String(weekLabel || '').trim() || formatShortDateForValueWatch();
+
+  var titleEl = document.getElementById('pTitle');
+  var excerptEl = document.getElementById('pExcerpt');
+  var catEl = document.getElementById('pCat');
+  var readEl = document.getElementById('pRead');
+
+  if (titleEl && !titleEl.value.trim()) titleEl.value = 'AMC Value Watch - Week ' + weekLabel;
+  if (excerptEl && !excerptEl.value.trim()) excerptEl.value = 'Weekly market watch: undervalued picks, trend checks, and rotation risk.';
+  if (catEl) catEl.value = 'Underrated';
+  if (readEl && !readEl.value) readEl.value = '10 min read';
+
+  ta.value = buildValueWatchTemplate(cardCount);
+  ta.focus();
+  ta.selectionStart = ta.selectionEnd = 0;
+  showToast('Value Watch template added. Fill in your card picks.');
 }
 function subscribe() {
   var inp = document.getElementById('subEmail');
