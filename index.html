@@ -672,39 +672,11 @@ function loadPostsFromDB() {
             id: p.id, tag: p.tag, title: normalizePokemonText(p.title), author: normalizePokemonText(p.author),
             date: p.date_published, read: p.read_time, excerpt: normalizePokemonText(p.excerpt),
             category: p.category, emoji: p.emoji, headerImg: p.header_img || '',
-            rawBody: normalizePokemonText(p.raw_body || ''), status: p.status
+            rawBody: normalizePokemonText(p.raw_body), status: p.status
           };
         });
       }
       return posts;
-    });
-}
-
-function fetchPostDetailsFromDB(id) {
-  return apiFetch('/api/posts?amc_post_id=' + encodeURIComponent(id))
-    .then(function(r) { return r.ok ? r.json() : Promise.reject(new Error('post details')); })
-    .then(function(p) {
-      if (!p || !p.id) return null;
-      var normalized = {
-        id: p.id,
-        tag: p.tag,
-        title: normalizePokemonText(p.title),
-        author: normalizePokemonText(p.author),
-        date: p.date_published,
-        read: p.read_time,
-        excerpt: normalizePokemonText(p.excerpt),
-        category: p.category,
-        emoji: p.emoji,
-        headerImg: p.header_img || '',
-        rawBody: normalizePokemonText(p.raw_body || ''),
-        status: p.status,
-        date_published: p.date_published,
-        updated_at: p.updated_at
-      };
-      var idx = posts.findIndex(function(x) { return x.id === normalized.id; });
-      if (idx >= 0) posts[idx] = Object.assign({}, posts[idx], normalized);
-      else posts.push(normalized);
-      return normalized;
     });
 }
 
@@ -2042,26 +2014,14 @@ function updateMeta(title, description, imgUrl) {
 
 // Override openArticle to update URL
 var _openArticle = openArticle;
-openArticle = function(id, opts) {
-  opts = opts || {};
+openArticle = function(id) {
   var a = posts.find(function(p) { return p.id === id; });
   if (!a) return;
   var slug = slugify(a.title);
-  var render = function(postData) {
-    var p = postData || a;
-    if (!opts.skipHistory) history.pushState({ articleId: id }, p.title, '/article/' + slug);
-    updateMeta(p.title, p.excerpt, p.headerImg || '', p);
-    _openArticle(id);
-    if (!opts.skipGa) sendGaPageView();
-  };
-  // List payload is intentionally lightweight; fetch full body/details on demand.
-  if (!a.rawBody || !String(a.rawBody).trim()) {
-    fetchPostDetailsFromDB(id)
-      .then(function(fullPost) { render(fullPost || a); })
-      .catch(function() { render(a); });
-    return;
-  }
-  render(a);
+  history.pushState({ articleId: id }, a.title, '/article/' + slug);
+  updateMeta(a.title, a.excerpt, a.headerImg || '', a);
+  _openArticle(id);
+  sendGaPageView();
 };
 
 // Override showPage('home') to reset URL
@@ -2102,7 +2062,7 @@ window.addEventListener('popstate', function(e) {
   } else if (path.startsWith('/article/')) {
     var slug = path.replace('/article/', '');
     var post = findPostBySlug(slug);
-    if (post) openArticle(post.id, { skipHistory: true, skipGa: true });
+    if (post) _openArticle(post.id);
     else _showPage('home');
   }
   sendGaPageView();
@@ -2436,7 +2396,7 @@ loadPostsFromDB().then(function() {
   if (path.startsWith('/article/')) {
     var slug = path.replace('/article/', '');
     var post = findPostBySlug(slug);
-    if (post) openArticle(post.id, { skipHistory: true, skipGa: true });
+    if (post) { updateMeta(post.title, post.excerpt, post.headerImg || '', post); _openArticle(post.id); }
     else renderHome('all');
   } else if (path === '/about') {
     _showPage('about');

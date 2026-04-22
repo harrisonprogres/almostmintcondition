@@ -60,28 +60,6 @@ function formatDate(dateValue) {
   return d.toISOString();
 }
 
-function isDataImageUrl(value) {
-  return typeof value === 'string' && value.startsWith('data:image');
-}
-
-function toListPost(post) {
-  const p = post || {};
-  return {
-    id: p.id,
-    tag: p.tag || '',
-    title: p.title || '',
-    author: p.author || '',
-    date_published: p.date_published || '',
-    read_time: p.read_time || '',
-    excerpt: p.excerpt || '',
-    category: p.category || '',
-    emoji: p.emoji || '',
-    // Avoid shipping massive base64 payloads in list responses.
-    header_img: isDataImageUrl(p.header_img) ? '' : (p.header_img || ''),
-    status: p.status || 'published'
-  };
-}
-
 module.exports = async (req, res) => {
   // Newsletter signup (pretty URLs via vercel.json rewrite → /api/posts?amc_newsletter=1)
   if (
@@ -105,7 +83,7 @@ module.exports = async (req, res) => {
     let posts = [];
     try {
       const response = await supabaseFetch(
-        'posts?select=id,title,excerpt,author,tag,date_published,read_time,header_img,status&status=eq.published&order=created_at.desc',
+        'posts?select=*&status=eq.published&order=created_at.desc',
         { method: 'GET' },
         false
       );
@@ -124,29 +102,14 @@ module.exports = async (req, res) => {
       res.status(404).send('Article not found');
       return;
     }
-    let fullPost = post;
-    try {
-      const fullResponse = await supabaseFetch(
-        'posts?select=*&status=eq.published&id=eq.' + encodeURIComponent(post.id) + '&limit=1',
-        { method: 'GET' },
-        false
-      );
-      const fullText = await fullResponse.text();
-      const fullData = JSON.parse(fullText);
-      if (fullResponse.ok && Array.isArray(fullData) && fullData[0]) {
-        fullPost = fullData[0];
-      }
-    } catch (_) {
-      fullPost = post;
-    }
     const canonical = `${SITE_ORIGIN}/article/${slug}`;
-    const title = `${fullPost.title} — Almost Mint Condition`;
-    const description = fullPost.excerpt || 'Market analysis, collector education, and Pokemon card spotlights.';
-    const publishedIso = formatDate(fullPost.date_published);
-    const modifiedIso = formatDate(fullPost.updated_at || fullPost.date_published);
-    const bodyHtml = parseBody(fullPost.raw_body || '');
+    const title = `${post.title} — Almost Mint Condition`;
+    const description = post.excerpt || 'Market analysis, collector education, and Pokemon card spotlights.';
+    const publishedIso = formatDate(post.date_published);
+    const modifiedIso = formatDate(post.updated_at || post.date_published);
+    const bodyHtml = parseBody(post.raw_body || '');
     const related = posts
-      .filter((p) => p.id !== fullPost.id)
+      .filter((p) => p.id !== post.id)
       .slice(0, 6)
       .map((p) => {
         const href = `/article/${slugify(p.title)}`;
@@ -156,12 +119,12 @@ module.exports = async (req, res) => {
     const schema = {
       '@context': 'https://schema.org',
       '@type': 'BlogPosting',
-      headline: fullPost.title,
+      headline: post.title,
       description,
       mainEntityOfPage: canonical,
       author: { '@type': 'Organization', name: 'Almost Mint Condition' },
       publisher: { '@type': 'Organization', name: 'Almost Mint Condition' },
-      ...(fullPost.header_img ? { image: [fullPost.header_img] } : {}),
+      ...(post.header_img ? { image: [post.header_img] } : {}),
       ...(publishedIso ? { datePublished: publishedIso } : {}),
       ...(modifiedIso ? { dateModified: modifiedIso } : {})
     };
@@ -178,11 +141,11 @@ module.exports = async (req, res) => {
   <meta property="og:title" content="${esc(title)}">
   <meta property="og:description" content="${esc(description)}">
   <meta property="og:url" content="${canonical}">
-  ${fullPost.header_img ? `<meta property="og:image" content="${esc(fullPost.header_img)}">` : ''}
-  <meta name="twitter:card" content="${fullPost.header_img ? 'summary_large_image' : 'summary'}">
+  ${post.header_img ? `<meta property="og:image" content="${esc(post.header_img)}">` : ''}
+  <meta name="twitter:card" content="${post.header_img ? 'summary_large_image' : 'summary'}">
   <meta name="twitter:title" content="${esc(title)}">
   <meta name="twitter:description" content="${esc(description)}">
-  ${fullPost.header_img ? `<meta name="twitter:image" content="${esc(fullPost.header_img)}">` : ''}
+  ${post.header_img ? `<meta name="twitter:image" content="${esc(post.header_img)}">` : ''}
   <script type="application/ld+json">${JSON.stringify(schema)}</script>
   <style>
     :root{--bg:#F7F4EE;--ink:#1C1917;--card:#FFFFFF;--red:#D04A2A;--muted:#78716C;--border:#E2DDD6;}
@@ -212,10 +175,10 @@ module.exports = async (req, res) => {
 <body>
   <main class="wrap">
     <a class="home-link" href="/">← Back to Almost Mint Condition</a>
-    <div class="pill">${esc(fullPost.tag || 'Article')}</div>
-    <h1>${esc(fullPost.title)}</h1>
-    <div class="meta">${esc(fullPost.author || 'AMC Staff')} · ${esc(fullPost.date_published || '')} · ${esc(fullPost.read_time || '')}</div>
-    ${fullPost.header_img ? `<img class="hero" src="${esc(fullPost.header_img)}" alt="${esc(fullPost.title)} image" fetchpriority="high">` : ''}
+    <div class="pill">${esc(post.tag || 'Article')}</div>
+    <h1>${esc(post.title)}</h1>
+    <div class="meta">${esc(post.author || 'AMC Staff')} · ${esc(post.date_published || '')} · ${esc(post.read_time || '')}</div>
+    ${post.header_img ? `<img class="hero" src="${esc(post.header_img)}" alt="${esc(post.title)} image" fetchpriority="high">` : ''}
     <article class="body">${bodyHtml}</article>
     <section class="related" aria-label="Related articles">
       <h2>Read next</h2>
@@ -229,55 +192,16 @@ module.exports = async (req, res) => {
     res.status(200).send(html);
     return;
   }
-  // Full single-post payload for SPA article hydration.
-  if (
-    req.method === 'GET' &&
-    req.query &&
-    String(req.query.amc_post_id || '').trim() !== ''
-  ) {
-    const postId = String(req.query.amc_post_id || '').trim();
-    try {
-      const response = await supabaseFetch(
-        'posts?select=*&status=eq.published&id=eq.' + encodeURIComponent(postId) + '&limit=1',
-        { method: 'GET' },
-        false
-      );
-      const text = await response.text();
-      const data = JSON.parse(text);
-      if (!response.ok) {
-        res.setHeader('Content-Type', 'application/json');
-        res.status(response.status).send(text);
-        return;
-      }
-      res.setHeader('Content-Type', 'application/json');
-      res.status(200).send(JSON.stringify((Array.isArray(data) && data[0]) ? data[0] : null));
-      return;
-    } catch (_) {
-      res.status(500).json({ error: 'Failed to load post' });
-      return;
-    }
-  }
 
   if (req.method !== 'GET') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
   try {
-    const response = await supabaseFetch(
-      'posts?select=id,tag,title,author,date_published,read_time,excerpt,category,emoji,header_img,status&status=eq.published&order=created_at.desc',
-      { method: 'GET' },
-      false
-    );
+    const response = await supabaseFetch('posts?select=*&status=eq.published&order=created_at.desc', { method: 'GET' }, false);
     const text = await response.text();
-    let data = [];
-    try {
-      data = JSON.parse(text);
-    } catch (_) {
-      data = [];
-    }
-    const slim = Array.isArray(data) ? data.map(toListPost) : [];
     res.setHeader('Content-Type', 'application/json');
-    res.status(response.ok ? 200 : response.status).send(JSON.stringify(slim));
+    res.status(response.status).send(text);
   } catch (_) {
     res.status(500).json({ error: 'Failed to load posts' });
   }
