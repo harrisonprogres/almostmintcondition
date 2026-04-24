@@ -4,22 +4,6 @@ const SITE_ORIGIN = (process.env.SITE_URL || 'https://www.almostmintcondition.co
 const POST_LIST_SELECT = 'id,tag,title,author,date_published,read_time,excerpt,category,emoji,header_img,status';
 // Keep raw_body out of list payloads for performance, but always include it for article-detail rendering.
 const POST_DETAIL_SELECT = `${POST_LIST_SELECT},raw_body`;
-const DATA_URI_PREFIX = 'data:image/';
-
-function sanitizeListImage(value) {
-  const img = String(value || '');
-  // Never ship embedded base64 image blobs in list payloads.
-  if (img.toLowerCase().startsWith(DATA_URI_PREFIX)) return '';
-  return img;
-}
-
-function sanitizeListPosts(rows) {
-  if (!Array.isArray(rows)) return rows;
-  return rows.map((row) => ({
-    ...row,
-    header_img: sanitizeListImage(row && row.header_img)
-  }));
-}
 
 function slugify(title) {
   return String(title || '')
@@ -260,16 +244,9 @@ module.exports = async (req, res) => {
       false
     );
     const text = await response.text();
-    let body = text;
-    try {
-      const parsed = JSON.parse(text);
-      body = JSON.stringify(sanitizeListPosts(parsed));
-    } catch (_) {
-      body = text;
-    }
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
-    res.status(response.status).send(body);
+    res.status(response.status).send(text);
   } catch (_) {
     res.status(500).json({ error: 'Failed to load posts' });
   }
