@@ -1,6 +1,25 @@
 const { supabaseFetch } = require('./_lib/supabase');
 const { handleNewsletterPost } = require('./_lib/newsletterHandler');
 const SITE_ORIGIN = (process.env.SITE_URL || 'https://www.almostmintcondition.com').replace(/\/$/, '');
+const POST_LIST_SELECT = 'id,tag,title,author,date_published,read_time,excerpt,category,emoji,header_img,status';
+// Keep raw_body out of list payloads for performance, but always include it for article-detail rendering.
+const POST_DETAIL_SELECT = `${POST_LIST_SELECT},raw_body`;
+const DATA_URI_PREFIX = 'data:image/';
+
+function sanitizeListImage(value) {
+  const img = String(value || '');
+  // Never ship embedded base64 image blobs in list payloads.
+  if (img.toLowerCase().startsWith(DATA_URI_PREFIX)) return '';
+  return img;
+}
+
+function sanitizeListPosts(rows) {
+  if (!Array.isArray(rows)) return rows;
+  return rows.map((row) => ({
+    ...row,
+    header_img: sanitizeListImage(row && row.header_img)
+  }));
+}
 
 function slugify(title) {
   return String(title || '')
@@ -83,7 +102,7 @@ module.exports = async (req, res) => {
     let posts = [];
     try {
       const response = await supabaseFetch(
-        'posts?select=*&status=eq.published&order=created_at.desc',
+        `posts?select=${POST_LIST_SELECT}&status=eq.published&order=created_at.desc`,
         { method: 'GET' },
         false
       );
@@ -95,9 +114,28 @@ module.exports = async (req, res) => {
       return;
     }
     const normalizedTarget = normalizeSlug(slug);
-    const post =
+    const postSummary =
       posts.find((p) => slugify(p.title) === slug) ||
       posts.find((p) => normalizeSlug(slugify(p.title)) === normalizedTarget);
+    if (!postSummary) {
+      res.status(404).send('Article not found');
+      return;
+    }
+    let post = null;
+    try {
+      const detailResponse = await supabaseFetch(
+        `posts?id=eq.${encodeURIComponent(postSummary.id)}&select=${POST_DETAIL_SELECT}&limit=1`,
+        { method: 'GET' },
+        false
+      );
+      const detailText = await detailResponse.text();
+      const detailData = JSON.parse(detailText);
+      if (detailResponse.ok && Array.isArray(detailData) && detailData[0]) {
+        post = detailData[0];
+      }
+    } catch (_) {
+      post = null;
+    }
     if (!post) {
       res.status(404).send('Article not found');
       return;
@@ -197,11 +235,41 @@ module.exports = async (req, res) => {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
+  const id = req.query && req.query.id ? String(req.query.id).trim() : '';
+  if (id) {
+    try {
+      const response = await supabaseFetch(
+        `posts?id=eq.${encodeURIComponent(id)}&status=eq.published&select=${POST_DETAIL_SELECT}&limit=1`,
+        { method: 'GET' },
+        false
+      );
+      const text = await response.text();
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+      res.status(response.status).send(text);
+      return;
+    } catch (_) {
+      res.status(500).json({ error: 'Failed to load post detail' });
+      return;
+    }
+  }
   try {
-    const response = await supabaseFetch('posts?select=*&status=eq.published&order=created_at.desc', { method: 'GET' }, false);
+    const response = await supabaseFetch(
+      `posts?select=${POST_LIST_SELECT}&status=eq.published&order=created_at.desc`,
+      { method: 'GET' },
+      false
+    );
     const text = await response.text();
+    let body = text;
+    try {
+      const parsed = JSON.parse(text);
+      body = JSON.stringify(sanitizeListPosts(parsed));
+    } catch (_) {
+      body = text;
+    }
     res.setHeader('Content-Type', 'application/json');
-    res.status(response.status).send(text);
+    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+    res.status(response.status).send(body);
   } catch (_) {
     res.status(500).json({ error: 'Failed to load posts' });
   }

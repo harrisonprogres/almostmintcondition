@@ -17,7 +17,9 @@
 <meta name="twitter:site" content="@almostmintcard">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231C1917'/><text x='16' y='23' text-anchor='middle' font-family='Georgia,serif' font-size='18' font-weight='900' fill='%23D04A2A'>A</text><text x='16' y='23' text-anchor='middle' font-family='Georgia,serif' font-size='18' font-weight='900' fill='%23F7F4EE' opacity='0.15'>A</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,800;0,900;1,700;1,900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"></noscript>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-DYXCPBT6ML"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -680,6 +682,16 @@ function loadPostsFromDB() {
     });
 }
 
+function loadArticleBodyFromDB(id) {
+  return apiFetch('/api/posts?id=' + encodeURIComponent(id))
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (!Array.isArray(data) || !data[0]) return '';
+      return normalizePokemonText(data[0].raw_body || '');
+    })
+    .catch(function() { return ''; });
+}
+
 function savePostToDB(post) {
   var row = {
     id: post.id, tag: post.tag, title: post.title, author: post.author,
@@ -791,6 +803,14 @@ function loadTopCardsTicker() {
     .catch(function() {
       setTickerPlaceholder('Top picks for this week — check back soon.');
     });
+}
+
+function loadTopCardsTickerDeferred() {
+  if (window.requestIdleCallback) {
+    window.requestIdleCallback(function() { loadTopCardsTicker(); }, { timeout: 1200 });
+    return;
+  }
+  setTimeout(loadTopCardsTicker, 250);
 }
 
 function makeClientId(prefix) {
@@ -1303,7 +1323,7 @@ function renderUndervaluedHomeStrip() {
     : (latest.excerpt || '');
   var th = document.getElementById('undervaluedHomeThumb');
   th.innerHTML = latest.headerImg
-    ? '<img src="' + latest.headerImg + '" alt="">'
+    ? '<img src="' + latest.headerImg + '" alt="" loading="lazy" decoding="async">'
     : '<span aria-hidden="true">' + (latest.emoji || '&#128200;') + '</span>';
   card.onclick = function(e) {
     if (e.target.closest('a.uv-home-cta')) return;
@@ -1322,7 +1342,7 @@ function renderUndervaluedArchive() {
   var html = '';
   uv.forEach(function(p) {
     var thumbContent = p.headerImg
-      ? '<img src="' + p.headerImg + '" style="width:100%;height:100%;object-fit:cover;">'
+      ? '<img src="' + p.headerImg + '" style="width:100%;height:100%;object-fit:cover;" loading="lazy" decoding="async">'
       : (p.emoji || '&#128200;');
     html += '<div class="post-card" data-id="' + p.id + '"><div class="post-thumb">' + thumbContent + '</div><div class="post-card-body"><div class="post-pill">' + p.tag + '</div><div class="post-title">' + p.title + '</div><div class="post-excerpt">' + p.excerpt + '</div><div class="post-meta"><span>' + p.author + '</span><span>&middot;</span><span>' + p.date + '</span><span>&middot;</span><span>' + p.read + '</span></div></div></div>';
   });
@@ -1388,7 +1408,7 @@ function renderAllArticlesArchive() {
   var html = '';
   allPosts.forEach(function(p) {
     var thumbContent = p.headerImg
-      ? '<img src="' + p.headerImg + '" style="width:100%;height:100%;object-fit:cover;">'
+      ? '<img src="' + p.headerImg + '" style="width:100%;height:100%;object-fit:cover;" loading="lazy" decoding="async">'
       : (p.emoji || '&#128196;');
     html += '<div class="post-card" data-id="' + p.id + '"><div class="post-thumb">' + thumbContent + '</div><div class="post-card-body"><div class="post-pill">' + p.tag + '</div><div class="post-title">' + p.title + '</div><div class="post-excerpt">' + (p.excerpt || '') + '</div><div class="post-meta"><span>' + p.author + '</span><span>&middot;</span><span>' + p.date + '</span><span>&middot;</span><span>' + p.read + '</span></div></div></div>';
   });
@@ -1455,12 +1475,12 @@ function renderFeatured() {
   var sides = publishedMain.slice(1, 4);
   var featuredSlug = slugify(featured.title);
   var featuredHref = '/article/' + featuredSlug;
-  var thumbImg = featured.headerImg ? '<img src="' + featured.headerImg + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">' : '<div class="feat-thumb-bg">&#128196;</div>';
+  var thumbImg = featured.headerImg ? '<img src="' + featured.headerImg + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" decoding="async">' : '<div class="feat-thumb-bg">&#128196;</div>';
   var sidesHtml = '';
   sides.forEach(function(p) {
     var sideSlug = slugify(p.title);
     var sideHref = '/article/' + sideSlug;
-    var sideThumb = p.headerImg ? '<img src="' + p.headerImg + '" style="width:100%;height:80px;object-fit:cover;border-radius:4px 4px 0 0;margin:-16px -18px 10px;width:calc(100% + 36px);">' : '';
+    var sideThumb = p.headerImg ? '<img src="' + p.headerImg + '" style="width:100%;height:80px;object-fit:cover;border-radius:4px 4px 0 0;margin:-16px -18px 10px;width:calc(100% + 36px);" loading="lazy" decoding="async">' : '';
     sidesHtml += '<div class="side-card" data-id="' + p.id + '"><a class="card-anchor" href="' + sideHref + '" onclick="event.preventDefault(); openArticle(\'' + p.id + '\')"><div>' + sideThumb + '<div class="side-pill">' + p.tag + '</div><div class="side-title">' + p.title + '</div></div><div class="side-meta">' + p.date + ' &middot; ' + p.read + '</div></a></div>';
   });
   if (sides.length === 0) sidesHtml = '<div class="side-card" style="opacity:0.4;cursor:default;"><div class="side-pill">Coming soon</div><div class="side-title">More posts coming soon...</div></div>';
@@ -1528,7 +1548,7 @@ function renderPosts(cat) {
   f.forEach(function(p) {
     var href = '/article/' + slugify(p.title);
     var thumbContent = p.headerImg
-      ? '<img src="' + p.headerImg + '" style="width:100%;height:100%;object-fit:cover;">'
+      ? '<img src="' + p.headerImg + '" style="width:100%;height:100%;object-fit:cover;" loading="lazy" decoding="async">'
       : (p.emoji || '&#128196;');
     html += '<div class="post-card" data-id="' + p.id + '"><a class="card-anchor" href="' + href + '" onclick="event.preventDefault(); openArticle(\'' + p.id + '\')"><div class="post-thumb">' + thumbContent + '</div><div class="post-card-body"><div class="post-pill">' + p.tag + '</div><div class="post-title">' + p.title + '</div><div class="post-excerpt">' + p.excerpt + '</div><div class="post-meta"><span>' + p.author + '</span><span>&middot;</span><span>' + p.date + '</span><span>&middot;</span><span>' + p.read + '</span></div></div></a></div>';
   });
@@ -1575,7 +1595,7 @@ function parseBody(text) {
       var close = l.lastIndexOf(']');
       if (close > 5) {
         var src = l.slice(5, close).trim();
-        if (src) return '<img class="inline-art-img" src="' + src + '" alt="Article image">';
+        if (src) return '<img class="inline-art-img" src="' + src + '" alt="Article image" loading="lazy" decoding="async">';
       }
     }
     return '<p>' + parseInline(l) + '</p>';
@@ -1592,7 +1612,21 @@ function openArticle(id) {
   document.getElementById('art-read').textContent = a.read;
   var headerEl = document.getElementById('art-header-img');
   if (a.headerImg) { headerEl.src = a.headerImg; headerEl.style.display = 'block'; } else { headerEl.style.display = 'none'; }
-  document.getElementById('art-body').innerHTML = parseBody(a.rawBody || '');
+  var hasRawBody = typeof a.rawBody === 'string' && a.rawBody.trim().length > 0;
+  if (hasRawBody) {
+    document.getElementById('art-body').innerHTML = parseBody(a.rawBody);
+  } else {
+    document.getElementById('art-body').innerHTML = '<p>Loading article body...</p>';
+    loadArticleBodyFromDB(a.id).then(function(rawBody) {
+      if (!rawBody) {
+        document.getElementById('art-body').innerHTML = '<p>Could not load this article body right now. Please try again.</p>';
+        return;
+      }
+      a.rawBody = rawBody;
+      document.getElementById('art-body').innerHTML = parseBody(rawBody);
+      updateReadProgress();
+    });
+  }
   renderRelatedArticles(a);
   showPage('article');
   updateReadProgress();
@@ -2390,34 +2424,36 @@ function deleteTopCard(id) {
 }
 
 // Init - load posts and handle URL routing on startup
-loadTopCardsTicker();
-loadPostsFromDB().then(function() {
-  var path = window.location.pathname;
-  if (path.startsWith('/article/')) {
+loadTopCardsTickerDeferred();
+var path = window.location.pathname;
+if (path === '/about') {
+  _showPage('about');
+  loadPage('about', 'about-body');
+} else if (path === '/favorites') {
+  _showPage('favorites');
+  loadFavoritesPage();
+} else if (path === '/contact') {
+  _showPage('contact');
+  loadPage('contact', 'contact-body');
+} else {
+  loadPostsFromDB().then(function() {
+    if (path.startsWith('/article/')) {
     var slug = path.replace('/article/', '');
     var post = findPostBySlug(slug);
     if (post) { updateMeta(post.title, post.excerpt, post.headerImg || '', post); _openArticle(post.id); }
     else renderHome('all');
-  } else if (path === '/about') {
-    _showPage('about');
-    loadPage('about', 'about-body');
-  } else if (path === '/favorites') {
-    _showPage('favorites');
-    loadFavoritesPage();
-  } else if (path === '/contact') {
-    _showPage('contact');
-    loadPage('contact', 'contact-body');
-  } else if (path === '/undervalued-picks') {
-    updateMeta('Undervalued picks — Almost Mint Condition', 'Weekly undervalued card picks — archived by week.');
-    _showPage('undervalued');
-  } else if (path === '/all-articles') {
-    updateMeta('All articles — Almost Mint Condition', 'Every published AMC article in chronological order.');
-    _showPage('articles');
-    renderAllArticlesArchive();
-  } else {
-    renderHome('all');
-  }
-});
+    } else if (path === '/undervalued-picks') {
+      updateMeta('Undervalued picks — Almost Mint Condition', 'Weekly undervalued card picks — archived by week.');
+      _showPage('undervalued');
+    } else if (path === '/all-articles') {
+      updateMeta('All articles — Almost Mint Condition', 'Every published AMC article in chronological order.');
+      _showPage('articles');
+      renderAllArticlesArchive();
+    } else {
+      renderHome('all');
+    }
+  });
+}
 window.addEventListener('scroll', updateReadProgress, { passive: true });
 window.addEventListener('resize', updateReadProgress);
 </script>

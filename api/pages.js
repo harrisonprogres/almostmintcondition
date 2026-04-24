@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
     const response = await supabaseFetch(`pages?id=eq.${encodeURIComponent(id)}&select=content`, { method: 'GET' }, useServiceRole);
     const text = await response.text();
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 'no-store, max-age=0');
+    res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=600');
     res.status(response.status).send(text);
   } catch (_) {
     res.status(500).json({ error: 'Failed to load page' });
