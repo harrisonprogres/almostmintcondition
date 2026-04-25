@@ -1,9 +1,9 @@
 const { supabaseFetch } = require('./_lib/supabase');
 const { handleNewsletterPost } = require('./_lib/newsletterHandler');
+const { getSession } = require('./_lib/adminAuth');
 const SITE_ORIGIN = (process.env.SITE_URL || 'https://www.almostmintcondition.com').replace(/\/$/, '');
 const POST_LIST_SELECT = 'id,tag,title,author,date_published,read_time,excerpt,category,emoji,header_img,status';
-// Keep raw_body out of list payloads for performance, but always include it for article-detail rendering.
-const POST_DETAIL_SELECT = `${POST_LIST_SELECT},raw_body`;
+// Keep body columns out of list payloads for performance; detail fetches can read full row.
 
 function slugify(title) {
   return String(title || '')
@@ -63,6 +63,38 @@ function formatDate(dateValue) {
   return d.toISOString();
 }
 
+function pickPostBody(post) {
+  if (!post || typeof post !== 'object') return '';
+  return post.raw_body || post.content || post.body || '';
+}
+
+async function incrementPostViewCount(post) {
+  if (!post || !post.id) return;
+  // Best-effort counter update; article delivery should never fail because of analytics.
+  const nextCount = Math.max(0, Number(post.view_count) || 0) + 1;
+  try {
+    await supabaseFetch(
+      `posts?id=eq.${encodeURIComponent(post.id)}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ view_count: nextCount })
+      },
+      true
+    );
+  } catch (_) {
+    // ignore view count failures
+  }
+}
+
+function shouldCountView(req) {
+  // Allow an explicit opt-out flag for manual QA/testing sessions.
+  if (req && req.query && String(req.query.amc_skip_view || '') === '1') {
+    return false;
+  }
+  // Exclude authenticated admin sessions so your own dashboard testing doesn't inflate stats.
+  return !getSession(req);
+}
+
 module.exports = async (req, res) => {
   // Newsletter signup (pretty URLs via vercel.json rewrite → /api/posts?amc_newsletter=1)
   if (
@@ -108,7 +140,8 @@ module.exports = async (req, res) => {
     let post = null;
     try {
       const detailResponse = await supabaseFetch(
-        `posts?id=eq.${encodeURIComponent(postSummary.id)}&select=${POST_DETAIL_SELECT}&limit=1`,
+        // Select full row for detail requests so we can support legacy/new body field names.
+        `posts?id=eq.${encodeURIComponent(postSummary.id)}&select=*&limit=1`,
         { method: 'GET' },
         false
       );
@@ -124,12 +157,15 @@ module.exports = async (req, res) => {
       res.status(404).send('Article not found');
       return;
     }
+    if (shouldCountView(req)) {
+      await incrementPostViewCount(post);
+    }
     const canonical = `${SITE_ORIGIN}/article/${slug}`;
     const title = `${post.title} — Almost Mint Condition`;
     const description = post.excerpt || 'Market analysis, collector education, and Pokemon card spotlights.';
     const publishedIso = formatDate(post.date_published);
     const modifiedIso = formatDate(post.updated_at || post.date_published);
-    const bodyHtml = parseBody(post.raw_body || '');
+    const bodyHtml = parseBody(pickPostBody(post));
     const related = posts
       .filter((p) => p.id !== post.id)
       .slice(0, 6)
@@ -223,7 +259,8 @@ module.exports = async (req, res) => {
   if (id) {
     try {
       const response = await supabaseFetch(
-        `posts?id=eq.${encodeURIComponent(id)}&status=eq.published&select=${POST_DETAIL_SELECT}&limit=1`,
+        // Select full row for detail endpoint to keep article body compatible across schema versions.
+        `posts?id=eq.${encodeURIComponent(id)}&status=eq.published&select=*&limit=1`,
         { method: 'GET' },
         false
       );

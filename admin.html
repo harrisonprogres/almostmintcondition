@@ -401,6 +401,7 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
         <div class="dash-side-lbl">Overview</div>
         <div class="dash-side-item active" onclick="showDS('overview',this)"><span class="ico">&#128202;</span>Dashboard</div>
         <div class="dash-side-item" onclick="showDS('posts',this)"><span class="ico">&#128196;</span>All Posts</div>
+        <div class="dash-side-item" onclick="showDS('views',this)"><span class="ico">&#128200;</span>Top Viewed</div>
         <div class="dash-side-item" onclick="showDS('editor',this)"><span class="ico">&#9997;</span>New Post</div>
       </div>
       <div class="dash-side-sec">
@@ -419,8 +420,8 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
       <div id="ds-overview">
         <div class="stat-row">
           <div class="stat-box"><div class="stat-lbl">Published</div><div class="stat-num" id="statPosts">0</div><div class="stat-note">Live on your blog</div></div>
-          <div class="stat-box"><div class="stat-lbl">Drafts</div><div class="stat-num" id="statDrafts">0</div><div class="stat-note">Saved locally</div></div>
-          <div class="stat-box"><div class="stat-lbl">Categories</div><div class="stat-num">7</div><div class="stat-note">Market, Underrated...</div></div>
+          <div class="stat-box"><div class="stat-lbl">Total Views</div><div class="stat-num" id="statTotalViews">0</div><div class="stat-note">Across published articles</div></div>
+          <div class="stat-box"><div class="stat-lbl">Avg Views / Post</div><div class="stat-num" id="statAvgViews">0</div><div class="stat-note">Total views divided by published posts</div></div>
           <div class="stat-box"><div class="stat-lbl">Status</div><div class="stat-num" style="font-size:16px;margin-top:4px;">&#128994; Live</div><div class="stat-note">almostmintcondition.com</div></div>
         </div>
         <div class="dash-welcome"><h2>Welcome back &#10022;</h2><p>Almost Mint Condition is live. What are you writing today?</p></div>
@@ -430,7 +431,13 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
       <div id="ds-posts" style="display:none;">
         <div class="pm-wrap">
           <div class="pm-head"><h2>All Posts</h2><button class="btn-pub" onclick="showDS('editor',null)">+ New Post</button></div>
-          <table class="pm-table"><thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody id="pmBody"></tbody></table>
+          <table class="pm-table"><thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Date</th><th>Views</th><th>Actions</th></tr></thead><tbody id="pmBody"></tbody></table>
+        </div>
+      </div>
+      <div id="ds-views" style="display:none;">
+        <div class="pm-wrap">
+          <div class="pm-head"><h2>Top Viewed Articles</h2></div>
+          <table class="pm-table"><thead><tr><th>Rank</th><th>Title</th><th>Category</th><th>Views</th><th>Status</th></tr></thead><tbody id="viewsBody"></tbody></table>
         </div>
       </div>
       <div id="ds-editor" style="display:none;">
@@ -677,7 +684,11 @@ function normalizePokemonText(value) {
 }
 
 function loadPostsFromDB() {
-  return apiFetch('/api/posts')
+  return apiFetch('/api/admin/posts')
+    .then(function(r) {
+      if (r.status === 401 || r.status === 403) return apiFetch('/api/posts');
+      return r;
+    })
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (Array.isArray(data)) {
@@ -686,7 +697,8 @@ function loadPostsFromDB() {
             id: p.id, tag: p.tag, title: normalizePokemonText(p.title), author: normalizePokemonText(p.author),
             date: p.date_published, read: p.read_time, excerpt: normalizePokemonText(p.excerpt),
             category: p.category, emoji: p.emoji, headerImg: p.header_img || '',
-            rawBody: normalizePokemonText(p.raw_body), status: p.status
+            rawBody: normalizePokemonText(p.raw_body), status: p.status,
+            viewCount: Number(p.view_count) || 0
           };
         });
       }
@@ -901,10 +913,11 @@ function showDash() {
   loadPostsFromDB().then(function() { renderDash(); });
 }
 function showDS(s, btn) {
-  ['overview','posts','editor','drafts','pages','favs','topcards'].forEach(function(x) { var e = document.getElementById('ds-' + x); if (e) e.style.display = (x === s) ? 'block' : 'none'; });
+  ['overview','posts','views','editor','drafts','pages','favs','topcards'].forEach(function(x) { var e = document.getElementById('ds-' + x); if (e) e.style.display = (x === s) ? 'block' : 'none'; });
   document.querySelectorAll('.dash-side-item').forEach(function(i) { i.classList.remove('active'); });
   if (btn) btn.classList.add('active');
   if (s === 'posts') renderPM();
+  if (s === 'views') renderTopViewed();
   if (s === 'drafts') renderDraftsTable();
   if (s === 'overview') renderRecent();
   if (s === 'editor') clearEditor();
@@ -1087,8 +1100,11 @@ function openArticle(id) {
 }
 
 function renderDash() {
+  var totalViews = posts.reduce(function(sum, p) { return sum + (Number(p.viewCount) || 0); }, 0);
+  var avgViews = posts.length ? (totalViews / posts.length) : 0;
   document.getElementById('statPosts').textContent = posts.length;
-  document.getElementById('statDrafts').textContent = drafts.length;
+  document.getElementById('statTotalViews').textContent = totalViews;
+  document.getElementById('statAvgViews').textContent = avgViews.toFixed(1);
   document.getElementById('draftCount').textContent = drafts.length;
   renderRecent();
 }
@@ -1107,11 +1123,11 @@ function renderRecent() {
 function renderPM() {
   var html = '';
   posts.forEach(function(p) {
-    html += '<tr><td><div class="pm-post-name">' + p.title + '</div><div class="pm-post-exc">' + p.excerpt + '</div></td><td>' + p.tag + '</td><td><span class="status-pub">Published</span></td><td>' + p.date + '</td>';
+    html += '<tr><td><div class="pm-post-name">' + p.title + '</div><div class="pm-post-exc">' + p.excerpt + '</div></td><td>' + p.tag + '</td><td><span class="status-pub">Published</span></td><td>' + p.date + '</td><td>' + (Number(p.viewCount) || 0) + '</td>';
     html += '<td><div class="pm-acts"><button class="pm-btn" data-action="edit" data-id="' + p.id + '">Edit</button><button class="pm-btn del" data-action="delete" data-id="' + p.id + '">Delete</button></div></td></tr>';
   });
   drafts.forEach(function(d) {
-    html += '<tr><td><div class="pm-post-name">' + (d.title || 'Untitled') + '</div></td><td>' + d.category + '</td><td><span class="status-dft">Draft</span></td><td>' + d.date + '</td>';
+    html += '<tr><td><div class="pm-post-name">' + (d.title || 'Untitled') + '</div></td><td>' + d.category + '</td><td><span class="status-dft">Draft</span></td><td>' + d.date + '</td><td>-</td>';
     html += '<td><div class="pm-acts"><button class="pm-btn" data-action="editdraft" data-id="' + d.id + '">Edit</button><button class="pm-btn btn-pub" style="background:var(--red);color:white;border:none;" data-action="pubdraft" data-id="' + d.id + '">Publish</button><button class="pm-btn del" data-action="deletedraft" data-id="' + d.id + '">Delete</button></div></td></tr>';
   });
   var tbody = document.getElementById('pmBody');
@@ -1125,6 +1141,22 @@ function renderPM() {
     else if (action === 'pubdraft') pubDraft(id);
     else if (action === 'deletedraft') deleteDraft(id);
   };
+}
+function renderTopViewed() {
+  var body = document.getElementById('viewsBody');
+  if (!body) return;
+  var ranked = posts
+    .slice()
+    .sort(function(a, b) { return (Number(b.viewCount) || 0) - (Number(a.viewCount) || 0); });
+  if (ranked.length === 0) {
+    body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">No posts available yet.</td></tr>';
+    return;
+  }
+  var html = '';
+  ranked.forEach(function(p, i) {
+    html += '<tr><td>#' + (i + 1) + '</td><td><div class="pm-post-name">' + p.title + '</div></td><td>' + p.tag + '</td><td>' + (Number(p.viewCount) || 0) + '</td><td>' + (p.status || 'published') + '</td></tr>';
+  });
+  body.innerHTML = html;
 }
 function renderDraftsTable() {
   var html = drafts.length === 0 ? '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">No drafts yet.</td></tr>' : '';
@@ -1201,7 +1233,6 @@ function deletePost(id) {
 function deleteDraft(id) {
   drafts = drafts.filter(function(d) { return d.id !== id; });
   saveDraftsToStorage(drafts);
-  document.getElementById('statDrafts').textContent = drafts.length;
   document.getElementById('draftCount').textContent = drafts.length;
   renderDraftsTable(); renderPM();
   showToast('Draft deleted.');
@@ -1234,7 +1265,6 @@ function saveDraft() {
   var existing = drafts.findIndex(function(d) { return d.id === draftData.id; });
   if (existing >= 0) drafts[existing] = draftData; else drafts.unshift(draftData);
   saveDraftsToStorage(drafts);
-  document.getElementById('statDrafts').textContent = drafts.length;
   document.getElementById('draftCount').textContent = drafts.length;
   showToast('Saved to drafts.');
 }
@@ -1252,7 +1282,8 @@ function publishPost() {
     tag: cat, title: t, author: 'AMC Staff',
     date: new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}),
     read: rd, excerpt: exc || b.substring(0, 120) + '...', category: cat.toLowerCase(),
-    emoji: catEmojis[cat] || '', headerImg: headerImg, rawBody: b, status: 'published' };
+    emoji: catEmojis[cat] || '', headerImg: headerImg, rawBody: b, status: 'published',
+    viewCount: 0 };
   showToast('Publishing...');
   savePostToDB(postData).then(function(res) {
     if (res.ok || res.status === 201) {
