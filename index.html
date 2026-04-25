@@ -645,6 +645,8 @@ var DRAFTS_KEY = 'amc_drafts_v1';
 
 var isLoggedIn = false;
 var posts = [];
+/** When set, article page is open; re-fill related rail after any posts[] refresh. */
+var activeArticlePostId = '';
 var drafts = loadDrafts();
 var allArticlesFilter = 'all';
 var allArticlesQuery = '';
@@ -667,6 +669,15 @@ function normalizePokemonText(value) {
     .replace(/Pok(?:émon|�mon)/g, 'Pokemon');
 }
 
+function refreshArticleRelatedIfNeeded() {
+  if (!activeArticlePostId) return;
+  var ap = document.getElementById('page-article');
+  if (!ap || !ap.classList.contains('active')) return;
+  var cur = posts.find(function(p) { return p.id === activeArticlePostId; });
+  if (!cur) return;
+  renderRelatedArticles(cur);
+}
+
 function loadPostsFromDB() {
   return apiFetch('/api/posts')
     .then(function(r) { return r.json(); })
@@ -681,6 +692,7 @@ function loadPostsFromDB() {
           };
         });
       }
+      refreshArticleRelatedIfNeeded();
       return posts;
     });
 }
@@ -891,6 +903,9 @@ function doLogout() {
 }
 
 function showPage(n) {
+  if (n !== 'article') {
+    activeArticlePostId = '';
+  }
   document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
   var pageEl = document.getElementById('page-' + n);
   if (!pageEl) return;
@@ -1609,6 +1624,7 @@ function parseBody(text) {
 function openArticle(id) {
   var a = posts.find(function(p) { return p.id === id; });
   if (!a) return;
+  activeArticlePostId = id;
   document.getElementById('art-tag').textContent = a.tag;
   document.getElementById('art-title').textContent = a.title;
   document.getElementById('art-author').textContent = a.author;
@@ -1637,6 +1653,8 @@ function openArticle(id) {
   showPage('article');
   renderRelatedArticles(a);
   requestAnimationFrame(function() { renderRelatedArticles(a); });
+  setTimeout(function() { renderRelatedArticles(a); }, 0);
+  setTimeout(function() { renderRelatedArticles(a); }, 120);
   updateReadProgress();
 }
 
@@ -1944,7 +1962,12 @@ function slugify(title) {
 }
 
 function findPostBySlug(slug) {
-  return posts.find(function(p) { return slugify(p.title) === slug; });
+  var raw = String(slug || '').split('?')[0].split('#')[0];
+  try {
+    raw = decodeURIComponent(raw);
+  } catch (_) {}
+  raw = raw.replace(/\/+$/, '').trim().toLowerCase();
+  return posts.find(function(p) { return slugify(p.title) === raw; });
 }
 
 // Update meta tags for SEO
@@ -2061,8 +2084,8 @@ openArticle = function(id) {
   if (!a) return;
   var slug = slugify(a.title);
   history.pushState({ articleId: id }, a.title, '/article/' + slug);
-  updateMeta(a.title, a.excerpt, a.headerImg || '', a);
   _openArticle(id);
+  updateMeta(a.title, a.excerpt, a.headerImg || '', a);
   sendGaPageView();
 };
 
@@ -2446,9 +2469,9 @@ if (path === '/about') {
 } else {
   loadPostsFromDB().then(function() {
     if (path.startsWith('/article/')) {
-    var slug = path.replace('/article/', '');
+    var slug = path.replace(/^\/article\//, '').replace(/\/+$/, '');
     var post = findPostBySlug(slug);
-    if (post) { updateMeta(post.title, post.excerpt, post.headerImg || '', post); _openArticle(post.id); }
+    if (post) { _openArticle(post.id); updateMeta(post.title, post.excerpt, post.headerImg || '', post); }
     else renderHome('all');
     } else if (path === '/undervalued-picks') {
       updateMeta('Undervalued picks — Almost Mint Condition', 'Weekly undervalued card picks — archived by week.');
