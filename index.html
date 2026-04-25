@@ -374,8 +374,9 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
   .article-layout{grid-template-columns:1fr;}
   .article-aside{padding-top:0;margin-top:26px;}
   .article-footer{margin-top:26px;}
-  /* On mobile, "More from AMC" (footer) duplicates the sidebar "Keep reading" content. */
-  .article-footer-related{display:none;}
+  /* Same suggestions as sidebar; show them after the article on small screens (sidebar block hidden to avoid duplicate). */
+  .article-aside-keep-reading{display:none;}
+  .article-footer-related{display:block;}
 }
 </style>
 </head>
@@ -520,8 +521,10 @@ body{background:radial-gradient(circle at top,#fbf8f3 0%,var(--bg) 40%);color:va
           <div id="relatedUndervaluedSidebar" class="related-posts"></div>
           <a href="/undervalued-picks" class="related-archive-link" onclick="event.preventDefault(); showPage('undervalued');">Browse all weeks &rarr;</a>
         </div>
-        <div class="aside-kicker">Keep reading</div>
-        <div id="relatedPostsSidebar" class="related-posts"></div>
+        <div id="articleAsideKeepReading" class="article-aside-keep-reading">
+          <div class="aside-kicker">Keep reading</div>
+          <div id="relatedPostsSidebar" class="related-posts"></div>
+        </div>
       </aside>
 
       <div class="article-footer" id="article-footer">
@@ -687,7 +690,8 @@ function loadArticleBodyFromDB(id) {
     .then(function(r) { return r.ok ? r.json() : null; })
     .then(function(data) {
       if (!Array.isArray(data) || !data[0]) return '';
-      return normalizePokemonText(data[0].raw_body || '');
+      var row = data[0] || {};
+      return normalizePokemonText(row.raw_body || row.content || row.body || '');
     })
     .catch(function() { return ''; });
 }
@@ -1616,7 +1620,7 @@ function openArticle(id) {
   if (hasRawBody) {
     document.getElementById('art-body').innerHTML = parseBody(a.rawBody);
   } else {
-    document.getElementById('art-body').innerHTML = '<p>Loading article body...</p>';
+    document.getElementById('art-body').innerHTML = '<p>Loading the next mint read...</p>';
     loadArticleBodyFromDB(a.id).then(function(rawBody) {
       if (!rawBody) {
         document.getElementById('art-body').innerHTML = '<p>Could not load this article body right now. Please try again.</p>';
@@ -1625,10 +1629,14 @@ function openArticle(id) {
       a.rawBody = rawBody;
       document.getElementById('art-body').innerHTML = parseBody(rawBody);
       updateReadProgress();
+      renderRelatedArticles(a);
+      requestAnimationFrame(function() { renderRelatedArticles(a); });
     });
   }
-  renderRelatedArticles(a);
+  // Show article shell first so aside/footer are laid out as visible (avoids empty related rails on some browsers).
   showPage('article');
+  renderRelatedArticles(a);
+  requestAnimationFrame(function() { renderRelatedArticles(a); });
   updateReadProgress();
 }
 
