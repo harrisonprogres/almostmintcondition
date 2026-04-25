@@ -11,7 +11,7 @@
       "source": "/api/subscribe",
       "destination": "/api/posts?amc_newsletter=1"
     },
-    { "source": "/article/:slug", "destination": "/api/posts?amc_article=1&slug=:slug" },
+    { "source": "/article/:slug", "destination": "/index.html" },
     { "source": "/", "destination": "/index.html" },
     { "source": "/about", "destination": "/index.html" },
     { "source": "/favorites", "destination": "/index.html" },
