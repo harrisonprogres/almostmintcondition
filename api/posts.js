@@ -1,6 +1,5 @@
 const { supabaseFetch } = require('./_lib/supabase');
 const { handleNewsletterPost } = require('./_lib/newsletterHandler');
-const { getSession } = require('./_lib/adminAuth');
 const SITE_ORIGIN = (process.env.SITE_URL || 'https://www.almostmintcondition.com').replace(/\/$/, '');
 const POST_LIST_SELECT = 'id,tag,title,author,date_published,read_time,excerpt,category,emoji,header_img,status';
 // Keep body columns out of list payloads for performance; detail fetches can read full row.
@@ -91,8 +90,8 @@ function shouldCountView(req) {
   if (req && req.query && String(req.query.amc_skip_view || '') === '1') {
     return false;
   }
-  // Exclude authenticated admin sessions so your own dashboard testing doesn't inflate stats.
-  return !getSession(req);
+  // Default behavior: count all views unless explicitly opted out.
+  return true;
 }
 
 module.exports = async (req, res) => {
