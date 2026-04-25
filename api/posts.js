@@ -265,6 +265,16 @@ module.exports = async (req, res) => {
         false
       );
       const text = await response.text();
+      if (response.ok && shouldCountView(req)) {
+        try {
+          const data = JSON.parse(text);
+          if (Array.isArray(data) && data[0]) {
+            await incrementPostViewCount(data[0]);
+          }
+        } catch (_) {
+          // ignore JSON parse/count failures, response passthrough remains intact
+        }
+      }
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
       res.status(response.status).send(text);
