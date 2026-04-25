@@ -246,7 +246,8 @@ module.exports = async (req, res) => {
 </body>
 </html>`;
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate');
+    // Counting views requires every request to reach the function (no edge cache hits).
+    res.setHeader('Cache-Control', 'no-store');
     res.status(200).send(html);
     return;
   }
@@ -276,7 +277,8 @@ module.exports = async (req, res) => {
         }
       }
       res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+      // Avoid caching detail fetches so SPA article opens can increment views consistently.
+      res.setHeader('Cache-Control', 'no-store');
       res.status(response.status).send(text);
       return;
     } catch (_) {
